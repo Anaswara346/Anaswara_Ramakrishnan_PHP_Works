@@ -86,6 +86,6 @@ $name2 = readline("Enter second name: ");
 
 $game = new FlamesGame($name1, $name2);
 
-$game->play();
+$game->play()
 
 ?>
