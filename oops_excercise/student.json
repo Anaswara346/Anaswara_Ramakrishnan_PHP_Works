@@ -1,0 +1,68 @@
+[
+    {
+        "name": "appu",
+        "age": "24",
+        "place": "Kannur",
+        "course": "Commerce"
+    },
+    {
+        "name": "Nayana K",
+        "age": "22",
+        "place": "Kannur",
+        "course": "Backend Developer"
+    },
+    {
+        "name": "Anaswara Ramakrishnan",
+        "age": "22",
+        "place": "Kannur",
+        "course": "Backend Developer"
+    },
+    {
+        "name": "ANu Priya",
+        "age": "25",
+        "place": "Kannur",
+        "course": "Maths"
+    },
+    {
+        "name": "Ammu",
+        "age": "23",
+        "place": "Kannur",
+        "course": "FrontEnd "
+    },
+    {
+        "name": "Varun",
+        "age": "23",
+        "place": "Kannur",
+        "course": "Geology"
+    },
+    {
+        "name": "Manu",
+        "age": "21",
+        "place": "Kannur",
+        "course": "CS"
+    },
+    {
+        "name": "Sanju",
+        "age": "30",
+        "place": "Kannur",
+        "course": "IT"
+    },
+    {
+        "name": "Jane",
+        "age": "29",
+        "place": "Calicut",
+        "course": "Digital Marketing"
+    },
+    {
+        "name": "Karthik",
+        "age": "25",
+        "place": "Calicut",
+        "course": "MSc"
+    },
+    {
+        "name": "Jacob",
+        "age": "33",
+        "place": "Kannur",
+        "course": "Business"
+    }
+]

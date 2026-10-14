@@ -1,0 +1,42 @@
+[
+    {
+        "sender": "nayana",
+        "message": "hello",
+        "time": "2026-10-14 05:27:31"
+    },
+    {
+        "sender": "anu",
+        "message": "hai hello",
+        "time": "2026-10-14 05:28:18"
+    },
+    {
+        "sender": "nayana",
+        "message": "how are you guyss",
+        "time": "2026-10-14 05:28:40"
+    },
+    {
+        "sender": "anu",
+        "message": "fine",
+        "time": "2026-10-14 05:28:52"
+    },
+    {
+        "sender": "anu",
+        "message": "hello",
+        "time": "2026-10-14 05:36:41"
+    },
+    {
+        "sender": "appu",
+        "message": "hello anu",
+        "time": "2026-10-14 05:37:34"
+    },
+    {
+        "sender": "anu",
+        "message": "hello appu good to see u",
+        "time": "2026-10-14 05:37:46"
+    },
+    {
+        "sender": "appu",
+        "message": "i see good to see u",
+        "time": "2026-10-14 05:37:55"
+    }
+]

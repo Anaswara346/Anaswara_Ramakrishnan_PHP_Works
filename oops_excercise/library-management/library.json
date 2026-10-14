@@ -1,0 +1,42 @@
+{
+    "books": [
+        {
+            "title": "Harry Potter",
+            "author": "J K Rowling",
+            "available": true
+        },
+        {
+            "title": "The Half Girlfriend",
+            "author": "Authorize",
+            "available": false
+        },
+        {
+            "title": "To kill a MockingBird",
+            "author": "Harper Lee",
+            "available": true
+        },
+        {
+            "title": "To make ",
+            "author": "Author 2",
+            "available": false
+        }
+    ],
+    "members": [
+        {
+            "name": "Anu",
+            "member_id": 101
+        },
+        {
+            "name": "Nayana",
+            "member_id": 102
+        },
+        {
+            "name": "Yuji",
+            "member_id": 103
+        },
+        {
+            "name": "Aparna",
+            "member_id": 104
+        }
+    ]
+}

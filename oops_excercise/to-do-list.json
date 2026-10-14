@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "task": "Learn PHP",
+        "completed": false
+    },
+    {
+        "id": 2,
+        "task": "OOPS Excercise",
+        "completed": true
+    },
+    {
+        "id": 3,
+        "task": "Project Work 2",
+        "completed": false
+    }
+]

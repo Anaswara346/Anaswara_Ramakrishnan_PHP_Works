@@ -1,0 +1,18 @@
+[
+    {
+        "name": "zenitsu",
+        "series": "demon slayer",
+        "traits": {
+            "ninja": 0,
+            "pirate": 0,
+            "saiyan": 0,
+            "demon": 0,
+            "sword": 1,
+            "blonde": 1,
+            "powers": 1,
+            "breathing": 1,
+            "special_eye": 0,
+            "orange": 0
+        }
+    }
+]
