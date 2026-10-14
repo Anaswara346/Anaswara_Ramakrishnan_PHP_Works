@@ -3,31 +3,31 @@
 
 class BingoGame
 {
-    private array $board = [];
+    private array $userBoard = [];
+    private array $computerBoard = [];
     private array $calledNumbers = [];
     private bool $gameOver = false;
 
     public function __construct()
     {
-        $this->generateBoard();
+        $this->userBoard = $this->generateBoard();
+        $this->computerBoard = $this->generateBoard();
     }
 
-    private function generateBoard(): void
+    private function generateBoard(): array
     {
         $numbers = range(1, 25);
         shuffle($numbers);
 
-        $this->board = array_chunk($numbers, 5);
+        return array_chunk($numbers, 5);
     }
 
-    private function displayBoard(): void
+    private function displayBoard(array $board, string $name): void
     {
-        echo "\n";
-        echo "================================\n";
-        echo "          B I N G O\n";
-        echo "================================\n";
+        echo "\n$name's Bingo Board\n";
+        echo "-------------------------\n";
 
-        foreach ($this->board as $row) {
+        foreach ($board as $row) {
             foreach ($row as $number) {
                 if (in_array($number, $this->calledNumbers)) {
                     echo "[X] ";
@@ -39,81 +39,69 @@ class BingoGame
             echo "\n";
         }
 
-        echo "================================\n";
+        echo "-------------------------\n";
     }
 
-    private function callRandomNumber(): void
+    private function displayBoards(): void
     {
-        $availableNumbers = array_values(
-            array_diff(range(1, 25), $this->calledNumbers)
-        );
-
-        if (empty($availableNumbers)) {
-            echo "All numbers have already been called!\n";
-            $this->gameOver = true;
-            return;
-        }
-
-        $number = $availableNumbers[array_rand($availableNumbers)];
-
-        echo "\nComputer calls: $number\n";
-
-        $this->processNumber($number);
+        $this->displayBoard($this->userBoard, "USER");
+        $this->displayBoard($this->computerBoard, "COMPUTER");
     }
 
-    private function callUserNumber(): void
+    private function callUserNumber(): ?int
     {
-        echo "\nEnter a number between 1 and 25: ";
+        echo "\nEnter a number (1-25): ";
         $input = trim(fgets(STDIN));
 
         if (!ctype_digit($input)) {
-            echo "Invalid input! Enter a whole number.\n";
-            return;
+            echo "Please enter a valid whole number.\n";
+            return null;
         }
 
         $number = (int) $input;
 
         if ($number < 1 || $number > 25) {
-            echo "Number must be between 1 and 25!\n";
-            return;
+            echo "Number must be between 1 and 25.\n";
+            return null;
         }
 
         if (in_array($number, $this->calledNumbers)) {
-            echo "Number $number has already been called!\n";
-            return;
+            echo "That number has already been called!\n";
+            return null;
         }
 
-        echo "\nYou call: $number\n";
+        echo "\nYou called: $number\n";
 
-        $this->processNumber($number);
+        return $number;
+    }
+
+    private function callComputerNumber(): int
+    {
+        $available = array_values(
+            array_diff(range(1, 25), $this->calledNumbers)
+        );
+
+        $number = $available[array_rand($available)];
+
+        echo "Computer called: $number\n";
+
+        return $number;
     }
 
     private function processNumber(int $number): void
     {
         $this->calledNumbers[] = $number;
-
-        echo "Number $number marked on the board!\n";
-
-        if ($this->checkWin()) {
-            $this->displayBoard();
-
-            echo "\n*** BINGO! YOU WIN! ***\n";
-            echo "Total numbers called: "
-                . count($this->calledNumbers) . "\n";
-
-            $this->gameOver = true;
-        }
     }
 
-    private function checkWin(): bool
+    private function checkWin(array $board): ?string
     {
-        // Check rows
+        // Check horizontal rows
         for ($row = 0; $row < 5; $row++) {
             $complete = true;
 
             for ($col = 0; $col < 5; $col++) {
                 if (!in_array(
-                    $this->board[$row][$col],
+                    $board[$row][$col],
                     $this->calledNumbers
                 )) {
                     $complete = false;
@@ -122,18 +110,17 @@ class BingoGame
             }
 
             if ($complete) {
-                echo "Winning pattern: Horizontal row!\n";
-                return true;
+                return "Horizontal row";
             }
         }
 
-        // Check columns
+        // Check vertical columns
         for ($col = 0; $col < 5; $col++) {
             $complete = true;
 
             for ($row = 0; $row < 5; $row++) {
                 if (!in_array(
-                    $this->board[$row][$col],
+                    $board[$row][$col],
                     $this->calledNumbers
                 )) {
                     $complete = false;
@@ -142,25 +129,24 @@ class BingoGame
             }
 
             if ($complete) {
-                echo "Winning pattern: Vertical column!\n";
-                return true;
+                return "Vertical column";
             }
         }
 
-        // Check both diagonals
+        // Check diagonals
         $mainDiagonal = true;
         $oppositeDiagonal = true;
 
         for ($i = 0; $i < 5; $i++) {
             if (!in_array(
-                $this->board[$i][$i],
+                $board[$i][$i],
                 $this->calledNumbers
             )) {
                 $mainDiagonal = false;
             }
 
             if (!in_array(
-                $this->board[$i][4 - $i],
+                $board[$i][4 - $i],
                 $this->calledNumbers
             )) {
                 $oppositeDiagonal = false;
@@ -168,65 +154,103 @@ class BingoGame
         }
 
         if ($mainDiagonal || $oppositeDiagonal) {
-            echo "Winning pattern: Diagonal!\n";
+            return "Diagonal";
+        }
+
+        return null;
+    }
+
+    private function checkWinner(): bool
+    {
+        $userPattern = $this->checkWin($this->userBoard);
+        $computerPattern = $this->checkWin($this->computerBoard);
+
+        if ($userPattern !== null && $computerPattern !== null) {
+            echo "\nIt's a DRAW! Both completed a pattern.\n";
+            $this->gameOver = true;
+            return true;
+        }
+
+        if ($userPattern !== null) {
+            echo "\n*** YOU WIN BINGO! ***\n";
+            echo "Your winning pattern: $userPattern\n";
+            $this->gameOver = true;
+            return true;
+        }
+
+        if ($computerPattern !== null) {
+            echo "\n*** COMPUTER WINS BINGO! ***\n";
+            echo "Computer's winning pattern: $computerPattern\n";
+            $this->gameOver = true;
             return true;
         }
 
         return false;
     }
 
-    private function displayCalledNumbers(): void
-    {
-        echo "\nCalled numbers: ";
-
-        if (empty($this->calledNumbers)) {
-            echo "None";
-        } else {
-            echo implode(", ", $this->calledNumbers);
-        }
-
-        echo "\n";
-    }
-
     public function start(): void
     {
-        echo "================================\n";
-        echo "       BINGO GAME 1-25\n";
-        echo "================================\n";
+        echo "====================================\n";
+        echo "       MULTIPLAYER BINGO 1-25\n";
+        echo "====================================\n";
 
         while (!$this->gameOver) {
-            $this->displayBoard();
+            $this->displayBoards();
 
-            echo "\n1. Computer calls a random number\n";
-            echo "2. I want to call a number\n";
-            echo "3. View called numbers\n";
-            echo "4. Exit game\n";
-            echo "Choose an option: ";
+            echo "\nCalled numbers: ";
+            echo empty($this->calledNumbers)
+                ? "None"
+                : implode(", ", $this->calledNumbers);
+            echo "\n";
+
+            echo "\n1. You call a number\n";
+            echo "2. Computer calls a random number\n";
+            echo "3. Exit game\n";
+            echo "Choose: ";
 
             $choice = trim(fgets(STDIN));
 
             switch ($choice) {
                 case "1":
-                    $this->callRandomNumber();
+                    $number = $this->callUserNumber();
+
+                    // Invalid input does not consume a turn.
+                    if ($number === null) {
+                        break;
+                    }
+
+                    $this->processNumber($number);
+
+                    if ($this->checkWinner()) {
+                        break;
+                    }
+
+                    // Computer gets its turn.
+                    $number = $this->callComputerNumber();
+                    $this->processNumber($number);
+
+                    $this->checkWinner();
                     break;
 
                 case "2":
-                    $this->callUserNumber();
+                    $number = $this->callComputerNumber();
+                    $this->processNumber($number);
+
+                    $this->checkWinner();
                     break;
 
                 case "3":
-                    $this->displayCalledNumbers();
-                    break;
-
-                case "4":
                     $this->gameOver = true;
-                    echo "Thanks for playing Bingo!\n";
+                    echo "Thanks for playing!\n";
                     break;
 
                 default:
-                    echo "Invalid option! Choose 1, 2, 3 or 4.\n";
+                    echo "Invalid choice. Select 1, 2, or 3.\n";
             }
         }
+
+        $this->displayBoards();
+        echo "\nGame over!\n";
     }
 }
 
