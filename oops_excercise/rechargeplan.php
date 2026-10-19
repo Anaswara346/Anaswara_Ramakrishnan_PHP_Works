@@ -18,4 +18,5 @@ class Recharge {
 
 $r = new Recharge();
 $r->showPlan(299);
+$r->showPlan(199);
 $r->showPlan(100);
