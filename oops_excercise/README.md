@@ -115,3 +115,10 @@
 112. Word search
 113. Word Dectective
 114. Word Counter
+115. Arrow game
+116. find DIfferent One
+117. GCD
+118. LCM
+119. Pangram
+120. Random team
+121. Swap
