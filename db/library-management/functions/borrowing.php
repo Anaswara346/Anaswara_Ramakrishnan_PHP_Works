@@ -312,3 +312,55 @@ function returnItem(PDO $pdo): void
         echo "Operation failed: " . $e->getMessage() . "\n";
     }
 }
+
+
+
+function viewCurrentlyBorrowedBooks(PDO $pdo): void
+{
+    echo "\n--- Currently Borrowed Books ---\n";
+
+    try {
+        $sql = "SELECT
+                    b.borrowing_id,
+                    u.user_name,
+                    bk.title,
+                    b.borrow_date,
+                    b.due_date,
+                    CASE
+                        WHEN b.due_date < CURDATE() THEN 'OVERDUE'
+                        ELSE 'BORROWED'
+                    END AS status
+                FROM borrowing AS b
+                JOIN library_user AS u
+                    ON b.user_id = u.user_id
+                JOIN book AS bk
+                    ON b.item_id = bk.item_id
+                WHERE b.return_date IS NULL
+                  AND b.borrowing_status = 'BORROWED'
+                ORDER BY b.due_date ASC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+
+        $records = $stmt->fetchAll();
+
+        if (empty($records)) {
+            echo "No currently borrowed books found.\n";
+            return;
+        }
+
+        foreach ($records as $record) {
+            echo "\n-----------------------------\n";
+            echo "Borrowing ID : " . $record['borrowing_id'] . "\n";
+            echo "User         : " . $record['user_name'] . "\n";
+            echo "Book         : " . $record['title'] . "\n";
+            echo "Borrow Date  : " . $record['borrow_date'] . "\n";
+            echo "Due Date     : " . $record['due_date'] . "\n";
+            echo "Status       : " . $record['status'] . "\n";
+        }
+
+    } catch (PDOException $e) {
+        echo "Database operation failed: "
+            . $e->getMessage() . "\n";
+    }
+}
