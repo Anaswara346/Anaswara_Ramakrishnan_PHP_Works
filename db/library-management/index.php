@@ -45,8 +45,9 @@ function displayMenu(): void
     echo "23. Add Lost-Item Fee\n";
     echo "24. Mark Fee as Paid\n";
     echo "25. Mark Book as Lost\n";
+    echo "26. View Currently Borrowed Books\n";
 
-    echo "\n26. Exit\n";
+    echo "\n27. Exit\n";
     echo "=============================================\n";
 }
 
@@ -154,8 +155,12 @@ while(true) {
             case '25':
                 markBookAsLost($pdo);
                 break;
-
+            
             case '26':
+                viewCurrentlyBorrowedBooks($pdo);
+                break;
+
+            case '27':
                 echo "Existing Library Management System.\n";
                 exit;
 
