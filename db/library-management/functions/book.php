@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-// To add a book item
+// To add a book 
 
 function addItem(PDO $pdo): void{
     try {
@@ -52,7 +52,7 @@ function addItem(PDO $pdo): void{
                 }
             }
 
-        $format = getInput("Enter physical format (Like Book, Magazine, etc ...) : ");
+        $format =selectPhysicalFormat();
 
         if ($format === '') {
             echo "Physical format cannot be empty.\n";
@@ -351,7 +351,7 @@ function viewItems(PDO $pdo): void
     $stmt = $pdo->query($sql);
     $books = $stmt->fetchAll();
 
-    echo "\n--- Library Items ---\n";
+    echo "\n--- Library Books ---\n";
 
     if (empty($books)) {
         echo "No books found.\n";
@@ -373,6 +373,51 @@ function viewItems(PDO $pdo): void
     echo "\n---------------------------------------\n";
 }
 
+function  selectPhysicalFormat(): string
+{
+    $format = [
+        1 => "Book",
+        2 => "TextBook",
+        3 => "Magazine",
+        4 => "Journal",
+        5 => "NewsPaper",
+        6 => "Comic",
+        7 => "Reference Book",
+        8 => "Thesis",
+        9 => "Workbook",
+        10 => "Manual",
+        11 => "Manga"
+    ];
+
+    echo "\nSelect Physical Format : \n";
+
+    foreach ($format as $number => $formatName) {
+        echo "$number . $formatName\n";
+    }
+
+    echo "12. Add New Format\n";
+
+    $choice = (int) getInput("Enter your choice : ");
+
+    if ($choice >= 1 && $choice <=11) {
+        return $format[$choice];
+    }
+
+    if ($choice === 12) {
+        do {
+            $newFormat = trim(getInput("Enter new physical format : "));
+
+            if ($newFormat === "") {
+                echo "Format cannot be empty. Try again.\n";
+            } 
+        } while($newFormat === "");
+
+        return $newFormat;
+    }
+    echo "Invalid choice. Please try again.\n";
+
+    return selectPhysicalFormat();
+}
 
 // Search books by title
 
@@ -468,7 +513,7 @@ function searchItem(PDO $pdo): void
 
 function updateItem(PDO $pdo): void
 {
-    echo "\n--- Update Item ---\n";
+    echo "\n--- Update Book ---\n";
 
     $itemId = getInput("Enter book ID to update: ");
 
