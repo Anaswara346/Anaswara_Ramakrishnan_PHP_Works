@@ -308,6 +308,63 @@ function updateUser(PDO $pdo): void
     }
 }
 
+function updateUserStatus(PDO $pdo): void
+{
+    viewUsers($pdo);
+
+    $userId = (int) getInput("Enter user ID : ");
+
+    $stmt = $pdo->prepare(
+            "SELECT user_id, user_name, account_status
+            FROM library_user
+            WHERE user_id = :user_id"
+    );
+
+    $stmt->execute(['user_id' => $userId]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        echo "User not Found\n";
+        return;
+    }
+
+    echo "\nUser  : " . $user['user_name'] . "\n";
+
+    echo "Current Status : " . $user['account_status'] . "\n";
+
+    echo "\nSelect New Account Status: \n";
+    echo "1. ACTIVE\n";
+    echo "2. INACTIVE\n";
+    echo "3. SUSPENDED\n";
+
+    $choice = (int) getInput("Enter your choice: ");
+
+    $statuses = [
+        1 => 'ACTIVE',
+        2 => 'INACTIVE',
+        3 => 'SUSPENDED'
+    ];
+
+    if (!isset($statuses[$choice])) {
+        echo "Invalid choice\n";
+        return;
+    }
+
+    $newStatus = $statuses[$choice];
+
+    $stmt = $pdo->prepare(
+        "UPDATE library_user
+         SET account_status = :status
+        WHERE user_id = :user_id"
+    );
+
+    $stmt->execute([
+        'status' => $newStatus,
+        'user_id' => $userId
+    ]);
+
+    echo "Account status updated to $newStatus successfully\n";
+}
 
 function deleteUser(PDO $pdo): void 
 {
