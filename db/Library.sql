@@ -4,7 +4,7 @@ use library_db;
 
 -- INSERT INTO user_category (category_name, max_items, loan_days, late_free_per_day) VALUES ('Staff', 10, 30, 1.00),('Undergraduate', 3, 14, 2.00),('Graduate Student', 5, 21, 2.00),('Research Student',8, 30, 3.00);
 
-SELECT * FROM user_category;
+-- SELECT * FROM user_category;
 /*
 CREATE TABLE library_user (user_id INT AUTO_INCREMENT PRIMARY KEY, user_name VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL UNIQUE,phone VARCHAR(15), category_id INT NOT NULL, account_status ENUM('ACTIVE','INACTIVE','SUSPENDED') NOT NULL DEFAULT 'ACTIVE', 
 FOREIGN KEY (category_id) REFERENCES user_category(category_id));
@@ -48,4 +48,31 @@ VALUES
     ('J. K. Rowling', 'British author best known for the Harry Potter series.', '1965-07-31', NULL),
     ('George Orwell', 'English novelist and essayist.', '1903-06-25', '1950-01-21');
 */
-SELECT * FROM author;
+-- SELECT * FROM author;
+
+use library_db;
+
+-- DESCRIBE book;
+
+
+
+-- SET FOREIGN_KEY_CHECKS = 1;
+
+-- SELECT * FROM user_category;
+
+-- SELECT COUNT(*) AS users_remaining FROM library_user;
+
+
+-- SELECT COUNT(*) AS books_remaining FROM book;
+
+-- SELECT COUNT(*) AS borrowings_remaining FROM borrowing;
+-- SELECT COUNT(*) AS fees_remaining FROM fee;
+
+ALTER TABLE fee ADD COLUMN payment_date DATETIME NULL;
+
+
+
+
+
+
+
