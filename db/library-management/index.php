@@ -30,7 +30,7 @@ function displayMenu(): void
     echo "4. Book Management\n";
     echo "5. Borrowing Management\n";
     echo "6. Book History & Inventory\n";
-    echo "7. Fine Management\n";
+    echo "7. Fines & Payments\n";
     echo "8. Exit\n";
     echo "=============================================\n";
 }
@@ -108,7 +108,8 @@ function displayBorrowingManagementMenu(
         echo "2. Return a Book\n";
         echo "3. View All Borrowings\n";
         echo "4. View Currently Borrowed Books\n";
-        echo "5. Back\n";
+        echo "5. Report Lost Copy\n";
+        echo "6. Back\n";
 
         $choice = getInput("Enter your choice : ");
 
@@ -126,6 +127,9 @@ function displayBorrowingManagementMenu(
                 $borrowingManager->viewCurrentlyBorrowedBooks();
                 break;
             case '5':
+                $borrowingManager->reportLostCopy();
+                break;
+            case '6':
                 return;
             default:
                 echo "Invalid choice. Please try again.\n";
@@ -248,12 +252,11 @@ function displayFeeManagementMenu(
     BorrowingManager $borrowingManager
 ): void {
     while (true) {
-        echo "\n--- Fine Management ---\n";
-        echo "1. View All Fines\n";
+        echo "\n--- Fines & Payments ---\n";
+        echo "1. Fine Records & Summary\n";
         echo "2. Mark Fine as Paid\n";
-        echo "3. Mark Book as Lost\n";
-        echo "4. View Current Overdue Fines\n";
-        echo "5. Back\n";
+        echo "3. View Estimated Overdue Charges\n";
+        echo "4. Back\n";
 
         $choice = getInput("Enter your choice : ");
 
@@ -265,12 +268,9 @@ function displayFeeManagementMenu(
                 $feeManager->markFeeAsPaid();
                 break;
             case '3':
-                $feeManager->markBookAsLost();
+                $borrowingManager->viewEstimatedOverdueCharges();
                 break;
             case '4':
-                $borrowingManager->viewOverdueFines();
-                break;
-            case '5':
                 return;
             default:
                 echo "Invalid choice. Please try again.\n";

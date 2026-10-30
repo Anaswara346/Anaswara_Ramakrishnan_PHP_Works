@@ -455,7 +455,164 @@ class BorrowingManager
         }
     }
 
-    public function viewOverdueFines(): void
+    public function reportLostCopy(): void
+    {
+        echo "\n--- Report Lost Copy ---\n";
+
+        $borrowingId = trim(getInput("Enter Borrowing ID: "));
+
+        if (!ctype_digit($borrowingId) || (int) $borrowingId < 1) {
+            echo "Please enter a valid Borrowing ID.\n";
+            return;
+        }
+
+        $sql = "SELECT
+                    b.borrowing_id,
+                    b.user_id,
+                    b.copy_id,
+                    b.return_date,
+                    b.borrowing_status,
+                    u.user_name,
+                    bk.title,
+                    bk.price
+                FROM borrowing AS b
+                JOIN library_user AS u
+                    ON b.user_id = u.user_id
+                JOIN book AS bk
+                    ON b.item_id = bk.item_id
+                WHERE b.borrowing_id = :borrowing_id";
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(['borrowing_id' => (int) $borrowingId]);
+            $borrowing = $stmt->fetch();
+
+            if (!$borrowing) {
+                echo "Borrowing record not found.\n";
+                return;
+            }
+
+            if (
+                $borrowing['borrowing_status'] !== 'BORROWED'
+                || $borrowing['return_date'] !== null
+            ) {
+                echo "This copy is not currently borrowed. "
+                    . "It may already be returned or reported lost.\n";
+                return;
+            }
+
+            echo "\nPlease confirm this lost-copy report:\n";
+            echo "Borrowing ID: " . $borrowing['borrowing_id'] . "\n";
+            echo "User        : " . $borrowing['user_name'] . "\n";
+            echo "Book        : " . $borrowing['title'] . "\n";
+            echo "Copy ID     : " . $borrowing['copy_id'] . "\n";
+            echo "Lost fee    : Rs. "
+                . number_format((float) $borrowing['price'], 2) . "\n";
+
+            $confirm = strtolower(trim(
+                getInput("Report this copy as lost and create an unpaid fee? (yes/no): ")
+            ));
+
+            if ($confirm !== 'yes') {
+                echo "Lost-copy report cancelled.\n";
+                return;
+            }
+
+            $this->pdo->beginTransaction();
+
+            $stmt = $this->pdo->prepare($sql . " FOR UPDATE");
+            $stmt->execute(['borrowing_id' => (int) $borrowingId]);
+            $borrowing = $stmt->fetch();
+
+            if (
+                !$borrowing
+                || $borrowing['borrowing_status'] !== 'BORROWED'
+                || $borrowing['return_date'] !== null
+            ) {
+                throw new RuntimeException(
+                    "This borrowing is no longer active. Please check its status."
+                );
+            }
+
+            $check = $this->pdo->prepare(
+                "SELECT fee_id
+                 FROM fee
+                 WHERE borrowing_id = :borrowing_id
+                   AND fee_type = 'LOST'
+                 LIMIT 1"
+            );
+            $check->execute(['borrowing_id' => (int) $borrowingId]);
+
+            if ($check->fetch()) {
+                throw new RuntimeException(
+                    "A lost-item fee already exists for this borrowing."
+                );
+            }
+
+            $update = $this->pdo->prepare(
+                "UPDATE borrowing
+                 SET borrowing_status = 'LOST'
+                 WHERE borrowing_id = :borrowing_id
+                   AND borrowing_status = 'BORROWED'
+                   AND return_date IS NULL"
+            );
+            $update->execute(['borrowing_id' => (int) $borrowingId]);
+
+            if ($update->rowCount() !== 1) {
+                throw new RuntimeException(
+                    "Could not update the borrowing status."
+                );
+            }
+
+            $copyUpdate = $this->pdo->prepare(
+                "UPDATE book_copy
+                 SET copy_status = 'LOST'
+                 WHERE copy_id = :copy_id
+                   AND copy_status = 'BORROWED'"
+            );
+            $copyUpdate->execute(['copy_id' => (int) $borrowing['copy_id']]);
+
+            if ($copyUpdate->rowCount() !== 1) {
+                throw new RuntimeException(
+                    "Could not mark the physical copy as lost."
+                );
+            }
+
+            $insert = $this->pdo->prepare(
+                "INSERT INTO fee
+                    (user_id, borrowing_id, fee_type,
+                     amount, fee_date, paid)
+                 VALUES
+                    (:user_id, :borrowing_id, 'LOST',
+                     :amount, :fee_date, FALSE)"
+            );
+            $insert->execute([
+                'user_id' => $borrowing['user_id'],
+                'borrowing_id' => (int) $borrowingId,
+                'amount' => $borrowing['price'],
+                'fee_date' => date('Y-m-d')
+            ]);
+
+            $this->pdo->commit();
+
+            echo "\nCopy reported as lost successfully!\n";
+            echo "User   : " . $borrowing['user_name'] . "\n";
+            echo "Book   : " . $borrowing['title'] . "\n";
+            echo "Copy ID: " . $borrowing['copy_id'] . "\n";
+            echo "Status : LOST\n";
+            echo "Fine   : Rs. "
+                . number_format((float) $borrowing['price'], 2) . "\n";
+            echo "Payment: Unpaid\n";
+        } catch (Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            echo "Operation failed: " . $e->getMessage() . "\n";
+        }
+    }
+
+    public function viewEstimatedOverdueCharges(): void
     {
         $sql = "
             SELECT
@@ -488,7 +645,7 @@ class BorrowingManager
             return;
         }
 
-        echo "\n--- Current Overdue Fines ---\n";
+        echo "\n--- Estimated Overdue Charges (not yet returned) ---\n";
 
         foreach ($overdueBooks as $book) {
             echo "User: " . $book['user_name'] . "\n";
@@ -498,7 +655,7 @@ class BorrowingManager
             echo "Overdue Days: " . $book['overdue_days'] . "\n";
             echo "Late Fine Per Day: Rs. "
                 . $book['late_fee_per_day'] . "\n";
-            echo "Current Fine: Rs. "
+            echo "Estimated Charge: Rs. "
                 . $book['current_fine'] . "\n";
             echo "-------------------------\n";
         }

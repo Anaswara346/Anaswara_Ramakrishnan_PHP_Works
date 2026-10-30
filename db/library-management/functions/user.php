@@ -210,9 +210,7 @@ class UserManager
         echo "Please enter a valid user ID.\n";
         return;
     }
-    
     // find the existing user
-
     $stmt = $this->pdo->prepare(
         "SELECT * FROM library_user WHERE user_id = :id"
     );
