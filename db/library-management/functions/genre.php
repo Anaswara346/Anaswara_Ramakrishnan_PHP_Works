@@ -1,9 +1,18 @@
 <?php
 
-require_once __DIR__ . '/../config/database.php';
+require_once "config/database.php";
 
-function addGenre(PDO $pdo): void
+class GenreManager
 {
+    private PDO $pdo;
+
+    public function __construct(PDO $connection)
+    {
+        $this->pdo = $connection;
+    }
+
+    public function addGenre(): void
+    {
     echo "\n---- Add Genre ----\n";
     $genreName = getInput("Enter genre name : ");
 
@@ -20,7 +29,7 @@ function addGenre(PDO $pdo): void
     $parentGenreId = null;
 
     if ($choice === '2') {
-        viewGenres($pdo);
+        $this->viewGenres();
 
         $parentId = getInput("Enter parent genre ID : ");
 
@@ -32,7 +41,7 @@ function addGenre(PDO $pdo): void
             return;
         }
 
-        $check = $pdo->prepare(
+        $check = $this->pdo->prepare(
             "SELECT genre_id
             FROM genre
             WHERE genre_id = :id"
@@ -57,7 +66,7 @@ function addGenre(PDO $pdo): void
                 (genre_name,parent_genre_id) VALUES (:name, :parent_id)";
 
     try {
-            $stmt = $pdo->prepare($sql);
+            $stmt = $this->pdo->prepare($sql);
 
             $stmt->execute([
                 'name' => $genreName,
@@ -65,14 +74,14 @@ function addGenre(PDO $pdo): void
             ]);
 
             echo "Genre added successfully.\n";
-            echo "Genre ID : " . $pdo->lastInsertId() . "\n";
+            echo "Genre ID : " . $this->pdo->lastInsertId() . "\n";
     } catch(PDOException $e) {
         echo "Database error: " . $e->getMessage() . "\n";
     }
-}
+    }
 
-function viewGenres(PDO $pdo): void
-{
+    public function viewGenres(): void
+    {
     $sql = "SELECT 
                 g.genre_id,
                 g.genre_name,
@@ -82,7 +91,7 @@ function viewGenres(PDO $pdo): void
                 ON g.parent_genre_id = p.genre_id
             ORDER BY g.genre_id";
 
-    $stmt = $pdo->query($sql);
+    $stmt = $this->pdo->query($sql);
     $genres = $stmt->fetchAll();
 
     echo "\n--- All Genres ---\n";
@@ -90,7 +99,7 @@ function viewGenres(PDO $pdo): void
     if (empty($genres)) {
         echo "No genres found.\n";
         return;
-    }
+        }
 
     foreach ($genres as $genre) {
         echo "--------------------------\n";
@@ -109,8 +118,8 @@ function viewGenres(PDO $pdo): void
 
 //search game
 
-function searchGenre(PDO $pdo): void
-{
+    public function searchGenre(): void
+    {
     $keyword = getInput("Enter genre name to search : ");
 
     if ($keyword === '') {
@@ -126,9 +135,9 @@ function searchGenre(PDO $pdo): void
             LEFT JOIN genre AS p
                 ON g.parent_genre_id = p.genre_id
             WHERE g.genre_name LIKE :keyword
-            ORDER BY g.genre__name";
+            ORDER BY g.genre_name";
 
-    $stmt = $pdo->prepare($sql);
+    $stmt = $this->pdo->prepare($sql);
 
     $stmt->execute([
         'keyword' => '%' . $keyword . '%'
@@ -153,4 +162,5 @@ function searchGenre(PDO $pdo): void
     }
 
     echo "---------------------------------------\n";
+    }
 }

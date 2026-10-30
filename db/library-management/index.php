@@ -1,60 +1,282 @@
 <?php 
+require_once "config/database.php";
+require_once "functions/user.php";
+require_once "functions/author.php";
+require_once "functions/genre.php";
+require_once "functions/book.php";
+require_once "functions/inventory.php";
+require_once "functions/borrowing.php";
+require_once "functions/fee.php";
 
-require_once __DIR__ . '/functions/user.php';
-require_once __DIR__ . '/functions/author.php';
-require_once __DIR__ . '/functions/genre.php';
-require_once __DIR__ . '/functions/book.php';
-require_once __DIR__ . '/functions/borrowing.php';
-require_once __DIR__ . '/functions/fee.php';
+$database = new Database();
+$pdo = $database->connect();
+$userManager = new UserManager($pdo);
+$authorManager = new AuthorManager($pdo);
+$bookManager = new BookManager($pdo);
+$inventoryManager = new InventoryManager($pdo);
+$borrowingManager = new BorrowingManager($pdo);
+$feeManager = new FeeManager($pdo);
+$genreManager = new GenreManager($pdo);
 
 function displayMenu(): void
 {
-    echo "\n============================================\n";
+    echo "\n==============================================\n";
     echo "          LIBRARY MANAGEMENT SYSTEM\n";
     echo "==============================================\n";
 
-    echo "\n--- User Management ---\n";
-    echo "1. View User Categories\n";
-    echo "2. Add Library User\n";
-    echo "3. View All Users\n";
-    echo "4. Search User\n";
-    echo "5. Update User\n";
-    echo "6. Delete User\n";
-    echo "7. Change User Account Status\n";
-
-
-    echo "\n--- Author Management ---\n";
-    echo "8. Add Author\n";
-    echo "9. View Authors\n";
-    echo "10. Search Author\n";
-    echo "11. Update Author\n";
-    echo "12. Delete Author\n";
-
-    echo "\n--- Genre Management ---\n";
-    echo "13. Add Genre\n";
-    echo "14. View Genres\n";
-    echo "15. Search Genre\n";
-
-    echo "\n--- Book Management ---\n";
-    echo "16. Add Book\n";
-    echo "17. View Books\n";
-    echo "18. Search Books\n";
-    echo "19. Update Book\n";
-    echo "20. Borrow an Book\n";
-    echo "21. View All Borrowings\n";
-    echo "22. Return the Book\n";
-
-    echo "\n---- Fee Manangement ---\n";
-    echo "23. View All Fees\n";
-    echo "24. Add Lost-Book Fee\n";
-    echo "25. Mark Fee as Paid\n";
-    echo "26. Mark Book as Lost\n";
-    echo "27. View Currently Borrowed Books\n";
-
-    echo "\n28. Exit\n";
+    echo "\n1. User Management\n";
+    echo "2. Author Management\n";
+    echo "3. Genre Management\n";
+    echo "4. Book Management\n";
+    echo "5. Borrowing Management\n";
+    echo "6. Book History & Inventory\n";
+    echo "7. Fine Management\n";
+    echo "8. Exit\n";
     echo "=============================================\n";
 }
 
+function displayBookManagementMenu(
+    BookManager $bookManager,
+    PDO $pdo
+): void {
+    while (true) {
+        echo "\n--- Book Management ---\n";
+        echo "1. Add Book\n";
+        echo "2. View Books\n";
+        echo "3. Search Books\n";
+        echo "4. Update Book\n";
+        echo "5. Delete Book\n";
+        echo "6. Back\n";
+
+        $choice = getInput("Enter your choice : ");
+
+        switch ($choice) {
+            case '1':
+                $bookManager->addItem();
+                break;
+            case '2':
+                $bookManager->viewItems();
+                break;
+            case '3':
+                $bookManager->searchItem();
+                break;
+            case '4':
+                displayUpdateBookMenu($bookManager, $pdo);
+                break;
+            case '5':
+                $bookManager->deleteBook();
+                break;
+            case '6':
+                return;
+            default:
+                echo "Invalid choice. Please try again.\n";
+        }
+    }
+}
+
+function displayUpdateBookMenu(BookManager $bookManager, PDO $pdo): void
+{
+    while (true) {
+        echo "\n====== UPDATE BOOK ======\n";
+        echo "1. Update Book Details\n";
+        echo "2. Manage Authors\n";
+        echo "3. Back\n";
+
+        $choice = getInput("Enter your choice : ");
+
+        switch ($choice) {
+            case '1':
+                $bookManager->updateItem();
+                break;
+            case '2':
+                $bookManager->manageBookAuthors($pdo);
+                break;
+            case '3':
+                return;
+            default:
+                echo "Invalid choice. Please try again.\n";
+        }
+    }
+}
+
+function displayBorrowingManagementMenu(
+    BorrowingManager $borrowingManager
+): void {
+    while (true) {
+        echo "\n--- Borrowing Management ---\n";
+        echo "1. Borrow a Book\n";
+        echo "2. Return a Book\n";
+        echo "3. View All Borrowings\n";
+        echo "4. View Currently Borrowed Books\n";
+        echo "5. Back\n";
+
+        $choice = getInput("Enter your choice : ");
+
+        switch ($choice) {
+            case '1':
+                $borrowingManager->borrowItem();
+                break;
+            case '2':
+                $borrowingManager->returnItem();
+                break;
+            case '3':
+                $borrowingManager->viewBorrowings();
+                break;
+            case '4':
+                $borrowingManager->viewCurrentlyBorrowedBooks();
+                break;
+            case '5':
+                return;
+            default:
+                echo "Invalid choice. Please try again.\n";
+        }
+    }
+}
+
+function displayUserManagementMenu(UserManager $userManager): void
+{
+    while (true) {
+        echo "\n--- User Management ---\n";
+        echo "1. View User Categories\n";
+        echo "2. Add Library User\n";
+        echo "3. View All Users\n";
+        echo "4. Search User\n";
+        echo "5. Update User\n";
+        echo "6. Delete User\n";
+        echo "7. Change User Account Status\n";
+        echo "8. Back\n";
+
+        $choice = getInput("Enter your choice : ");
+        switch ($choice) {
+            case '1':
+                $userManager->viewUserCategory();
+                break;
+            case '2':
+                $userManager->addUser();
+                break;
+            case '3':
+                $userManager->viewUsers();
+                break;
+            case '4':
+                $userManager->searchUser();
+                break;
+            case '5':
+                $userManager->updateUser();
+                break;
+            case '6':
+                $userManager->deleteUser();
+                break;
+            case '7':
+                $userManager->updateUserStatus();
+                break;
+            case '8':
+                return;
+            default:
+                echo "Invalid choice. Please try again.\n";
+        }
+    }
+}
+
+function displayAuthorManagementMenu(AuthorManager $authorManager): void
+{
+    while (true) {
+        echo "\n--- Author Management ---\n";
+        echo "1. Add Author\n";
+        echo "2. View Authors\n";
+        echo "3. Search Author\n";
+        echo "4. Update Author\n";
+        echo "5. Delete Author\n";
+        echo "6. Back\n";
+
+        $choice = getInput("Enter your choice : ");
+
+        switch ($choice) {
+            case '1':
+                $authorManager->addAuthor();
+                break;
+            case '2':
+                $authorManager->viewAuthors();
+                break;
+            case '3':
+                $authorManager->searchAuthor();
+                break;
+            case '4':
+                $authorManager->updateAuthor();
+                break;
+            case '5':
+                $authorManager->deleteAuthor();
+                break;
+            case '6':
+                return;
+            default:
+                echo "Invalid choice. Please try again.\n";
+        }
+    }
+}
+
+function displayGenreManagementMenu(GenreManager $genreManager): void
+{
+    while (true) {
+        echo "\n--- Genre Management ---\n";
+        echo "1. Add Genre\n";
+        echo "2. View Genres\n";
+        echo "3. Search Genre\n";
+        echo "4. Back\n";
+
+        $choice = getInput("Enter your choice : ");
+
+        switch ($choice) {
+            case '1':
+                $genreManager->addGenre();
+                break;
+            case '2':
+                $genreManager->viewGenres();
+                break;
+            case '3':
+                $genreManager->searchGenre();
+                break;
+            case '4':
+                return;
+            default:
+                echo "Invalid choice. Please try again.\n";
+        }
+    }
+}
+
+function displayFeeManagementMenu(
+    FeeManager $feeManager,
+    BorrowingManager $borrowingManager
+): void {
+    while (true) {
+        echo "\n--- Fine Management ---\n";
+        echo "1. View All Fines\n";
+        echo "2. Mark Fine as Paid\n";
+        echo "3. Mark Book as Lost\n";
+        echo "4. View Current Overdue Fines\n";
+        echo "5. Back\n";
+
+        $choice = getInput("Enter your choice : ");
+
+        switch ($choice) {
+            case '1':
+                $feeManager->viewFees();
+                break;
+            case '2':
+                $feeManager->markFeeAsPaid();
+                break;
+            case '3':
+                $feeManager->markBookAsLost();
+                break;
+            case '4':
+                $borrowingManager->viewOverdueFines();
+                break;
+            case '5':
+                return;
+            default:
+                echo "Invalid choice. Please try again.\n";
+        }
+    }
+}
 
 while(true) {
     displayMenu();
@@ -63,111 +285,35 @@ while(true) {
 
     try {
         switch ($choice) {
-            case '1' : 
-                viewUserCategory($pdo);
+            case '1':
+                displayUserManagementMenu($userManager);
                 break;
-            case '2' :
-                addUser($pdo);
+
+            case '2':
+                displayAuthorManagementMenu($authorManager);
                 break;
-            
-            case '3' :
-                viewUsers($pdo);
+
+            case '3':
+                displayGenreManagementMenu($genreManager);
                 break;
-            
+
             case '4':
-                searchUser($pdo);
+                displayBookManagementMenu($bookManager, $pdo);
                 break;
 
             case '5':
-                updateUser($pdo);
+                displayBorrowingManagementMenu($borrowingManager);
                 break;
 
             case '6':
-                deleteUser($pdo);
+                $inventoryManager->bookHistoryMenu();
                 break;
 
-            case 7:
-                updateUserStatus($pdo);
+            case '7':
+                displayFeeManagementMenu($feeManager, $borrowingManager);
                 break;
+
             case '8':
-                addAuthor($pdo);
-                break;
-
-            case '9':
-                viewAuthors($pdo);
-                break;
-
-            case '10':
-                searchAuthor($pdo);
-                break;
-
-            case '11':
-                updateAuthor($pdo);
-                break;
-
-            case '12':
-                deleteAuthor($pdo);
-                break;
-
-            case '13':
-                addGenre($pdo);
-                break;
-
-            case '14':
-                viewGenres($pdo);
-                break;
-
-            case '15':
-                searchGenre($pdo);
-                break;
-
-            case '16':
-                addItem($pdo);
-                break;
-
-            case '17':
-                viewItems($pdo);
-                break;
-            
-            case '18':
-                searchItem($pdo);
-                break;
-
-            case '19':
-                updateItem($pdo);
-                break;
-
-            case '20':
-                borrowItem($pdo);
-                break;
-            
-            case '21':
-                viewBorrowings($pdo);
-                break;
-
-            case '22':
-                returnItem($pdo);
-                break;
-
-            case '23':
-                viewFees($pdo);
-                break;
-            
-            case '24':
-                addLostItemFee($pdo);
-                break;
-            case '25':
-                markFeeAsPaid($pdo);
-                break;
-            case '26':
-                markBookAsLost($pdo);
-                break;
-            
-            case '27':
-                viewCurrentlyBorrowedBooks($pdo);
-                break;
-
-            case '28':
                 echo "Existing Library Management System.\n";
                 exit;
 

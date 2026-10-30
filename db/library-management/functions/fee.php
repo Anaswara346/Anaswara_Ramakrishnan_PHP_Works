@@ -1,149 +1,131 @@
-
 <?php
 
-function viewFees(PDO $pdo): void
+class FeeManager
 {
-    echo "\n--- View All Fees ---\n";
+    private PDO $pdo;
 
-    try {
-        $sql = "SELECT
-                    f.fee_id,
-                    u.user_name,
-                    f.borrowing_id,
-                    f.fee_type,
-                    f.amount,
-                    f.fee_date,
-                    f.paid
-                FROM fee AS f
-                JOIN library_user AS u
-                    ON f.user_id = u.user_id
-                ORDER BY f.fee_id DESC";
+    public function __construct(PDO $connection)
+    {
+        $this->pdo = $connection;
+    }
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute();
+    public function viewFees(): void
+{
+    $sql = "
+        SELECT
+            f.fee_id,
+            u.user_name,
+            b.title AS book_name,
+            br.copy_id,
+            f.fee_type,
+            f.amount,
+            f.fee_date,
+            f.paid,
+            f.payment_date
+        FROM fee f
+        JOIN library_user u
+            ON f.user_id = u.user_id
+        JOIN borrowing br
+            ON f.borrowing_id = br.borrowing_id
+        JOIN book b
+            ON br.item_id = b.item_id
+        ORDER BY f.fee_date DESC
+    ";
 
-        $fees = $stmt->fetchAll();
+    $stmt = $this->pdo->query($sql);
+    $fees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (empty($fees)) {
-            echo "No fee records found.\n";
-            return;
-        }
+    echo "\n======== FINE HISTORY ==========\n";
 
+    if (empty($fees)) {
+        echo "No fee records found.\n";
+    } else {
         foreach ($fees as $fee) {
-            echo "\n-----------------------------\n";
-            echo "Fee ID       : " . $fee['fee_id'] . "\n";
-            echo "User         : " . $fee['user_name'] . "\n";
-            echo "Borrowing ID : " . $fee['borrowing_id'] . "\n";
-            echo "Fee Type     : " . $fee['fee_type'] . "\n";
-            echo "Amount       : Rs. "
-                . number_format((float) $fee['amount'], 2) . "\n";
-            echo "Fee Date     : " . $fee['fee_date'] . "\n";
-            echo "Payment      : "
+            echo "Fine ID: " . $fee['fee_id'] . "\n";
+            echo "User: " . $fee['user_name'] . "\n";
+            echo "Book: " . $fee['book_name'] . "\n";
+            echo "Copy ID: " . $fee['copy_id'] . "\n";
+            echo "Type: " . $fee['fee_type'] . "\n";
+            echo "Amount: Rs. " . $fee['amount'] . "\n";
+            echo "Fine Recorded: " . $fee['fee_date'] . "\n";
+            echo "Status: "
                 . ($fee['paid'] ? 'Paid' : 'Unpaid') . "\n";
-        }
+            echo "Payment Date: "
+                . ($fee['payment_date']
+                    ?? ($fee['paid'] ? 'Not recorded' : 'Not paid')) . "\n";
 
-    } catch (PDOException $e) {
-        echo "Database operation failed: "
-            . $e->getMessage() . "\n";
+            echo "-------------------------------------------------------\n";
+        }
+    }
+
+    $sql = "
+        SELECT
+            COALESCE(SUM(
+                CASE WHEN paid = 1 THEN amount ELSE 0 END
+            ), 0) AS total_collected,
+            COALESCE(SUM(
+                CASE WHEN paid = 0 THEN amount ELSE 0 END
+            ), 0) AS total_outstanding,
+            COALESCE(SUM(amount), 0) AS total_recorded
+        FROM fee
+    ";
+
+    $stmt = $this->pdo->query($sql);
+    $summary = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    echo "\n========== FINE REVENUE SUMMARY ========\n";
+    echo "Total Fines Recorded: Rs. "
+        . $summary['total_recorded'] . "\n";
+    echo "Revenue Collected: Rs. "
+        . $summary['total_collected'] . "\n";
+    echo "Outstanding Fines: Rs. "
+        . $summary['total_outstanding'] . "\n";
+
+    $sql = "
+        SELECT
+            b.item_id,
+            b.title AS book_name,
+            COALESCE(SUM(
+                CASE WHEN f.paid = 1 THEN f.amount ELSE 0 END
+            ), 0) AS revenue_collected,
+            COALESCE(SUM(
+                CASE WHEN f.paid = 0 THEN f.amount ELSE 0 END
+            ), 0) AS outstanding_amount
+        FROM book b
+        JOIN borrowing br
+            ON b.item_id = br.item_id
+        JOIN fee f
+            ON br.borrowing_id = f.borrowing_id
+        GROUP BY b.item_id, b.title
+        ORDER BY revenue_collected DESC
+    ";
+
+    $stmt = $this->pdo->query($sql);
+    $bookRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo "\n========== REVENUE BY BOOK ===-======\n";
+
+    if (empty($bookRevenue)) {
+        echo "No book-related fee records found.\n";
+        return;
+    }
+
+    foreach ($bookRevenue as $book) {
+        echo "\nBook: " . $book['book_name'] . "\n";
+        echo "Revenue Collected: Rs. "
+            . $book['revenue_collected'] . "\n";
+        echo "Payment to be collected: Rs. "
+            . $book['outstanding_amount'] . "\n";
     }
 }
+    public function markFeeAsPaid(): void
+    {
+    echo "\n--- Mark Fine as Paid ---\n";
 
-
-function addLostItemFee(PDO $pdo): void
-{
-    echo "\n--- Add Lost Item Fee ---\n";
-
-    $borrowingId = (int) getInput("Enter Borrowing ID: ");
+    $feeId = (int) getInput("Enter Fine ID: ");
 
     try {
-        $sql = "SELECT
-                    b.borrowing_id,
-                    b.user_id,
-                    b.return_date,
-                    b.item_id,
-                    u.user_name,
-                    i.title,
-                    i.price
-                FROM borrowing AS b
-                JOIN library_user AS u
-                    ON b.user_id = u.user_id
-                JOIN book AS i
-                    ON b.item_id = i.item_id
-                WHERE b.borrowing_id = :borrowing_id";
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            'borrowing_id' => $borrowingId
-        ]);
-
-        $borrowing = $stmt->fetch();
-
-        if (!$borrowing) {
-            echo "Borrowing record not found.\n";
-            return;
-        }
-
-        if ($borrowing['return_date'] !== null) {
-            echo "This item has already been returned. "
-                . "Check the borrowing record before adding a lost-item fee.\n";
-            return;
-        }
-
-        // Prevent duplicate lost-item fees
-        $check = $pdo->prepare(
-            "SELECT fee_id
-             FROM fee
-             WHERE borrowing_id = :borrowing_id
-               AND fee_type = 'LOST'
-             LIMIT 1"
-        );
-
-        $check->execute([
-            'borrowing_id' => $borrowingId
-        ]);
-
-        if ($check->fetch()) {
-            echo "A lost-item fee already exists for this borrowing.\n";
-            return;
-        }
-
-        $amount = (float) $borrowing['price'];
-
-        $insert = $pdo->prepare(
-            "INSERT INTO fee
-                (user_id, borrowing_id, fee_type, amount, fee_date, paid)
-             VALUES
-                (:user_id, :borrowing_id, 'LOST', :amount, :fee_date, FALSE)"
-        );
-
-        $insert->execute([
-            'user_id' => $borrowing['user_id'],
-            'borrowing_id' => $borrowingId,
-            'amount' => $amount,
-            'fee_date' => date('Y-m-d')
-        ]);
-
-        echo "\nLost-item fee added successfully!\n";
-        echo "User   : " . $borrowing['user_name'] . "\n";
-        echo "Book   : " . $borrowing['title'] . "\n";
-        echo "Amount : Rs. " . number_format($amount, 2) . "\n";
-
-    } catch (PDOException $e) {
-        echo "Database operation failed: "
-            . $e->getMessage() . "\n";
-    }
-}
-
-
-
-function markFeeAsPaid(PDO $pdo): void
-{
-    echo "\n--- Mark Fee as Paid ---\n";
-
-    $feeId = (int) getInput("Enter Fee ID: ");
-
-    try {
-        $stmt = $pdo->prepare(
+        $stmt = $this->pdo->prepare(
             "SELECT fee_id, amount, paid
              FROM fee
              WHERE fee_id = :fee_id"
@@ -156,39 +138,50 @@ function markFeeAsPaid(PDO $pdo): void
         $fee = $stmt->fetch();
 
         if (!$fee) {
-            echo "Fee record not found.\n";
+            echo "Fine record not found.\n";
             return;
-        }
+            }
 
         if ($fee['paid']) {
-            echo "This fee has already been paid.\n";
+            echo "This fine has already been paid.\n";
             return;
         }
 
-        $update = $pdo->prepare(
+        $update = $this->pdo->prepare(
             "UPDATE fee
-             SET paid = TRUE
-             WHERE fee_id = :fee_id"
+             SET paid = TRUE,
+                 payment_date = CURRENT_TIMESTAMP
+             WHERE fee_id = :fee_id
+               AND paid = FALSE"
         );
 
         $update->execute([
             'fee_id' => $feeId
         ]);
 
-        echo "Fee marked as paid successfully!\n";
+        if ($update->rowCount() !== 1) {
+            echo "Fine could not be marked as paid. Please check its current status.\n";
+            return;
+        }
+        $paymentDateStmt = $this->pdo->prepare(
+            "SELECT payment_date
+             FROM fee
+             WHERE fee_id = :fee_id"
+        );
+        $paymentDateStmt->execute(['fee_id' => $feeId]);
+        $paymentDate = $paymentDateStmt->fetchColumn();
+    
+        echo "Fine marked as paid successfully!\n";
         echo "Amount paid: Rs. "
             . number_format((float) $fee['amount'], 2) . "\n";
-
+        echo "Payment date: " . $paymentDate . "\n";
     } catch (PDOException $e) {
         echo "Database operation failed: "
             . $e->getMessage() . "\n";
     }
 }
-
-
-
-function markBookAsLost(PDO $pdo): void
-{
+    public function markBookAsLost(): void
+    {
     echo "\n--- Mark Book as Lost ---\n";
 
     $borrowingId = (int) getInput("Enter Borrowing ID: ");
@@ -197,15 +190,13 @@ function markBookAsLost(PDO $pdo): void
         echo "Please enter a valid Borrowing ID.\n";
         return;
     }
-
     try {
-        $pdo->beginTransaction();
-
-        // Find the borrowing record and book price
+        $this->pdo->beginTransaction();
         $sql = "SELECT
                     b.borrowing_id,
                     b.user_id,
                     b.item_id,
+                    b.copy_id,
                     b.return_date,
                     b.borrowing_status,
                     u.user_name,
@@ -219,32 +210,27 @@ function markBookAsLost(PDO $pdo): void
                 WHERE b.borrowing_id = :borrowing_id
                 FOR UPDATE";
 
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             'borrowing_id' => $borrowingId
         ]);
-
         $borrowing = $stmt->fetch();
-
         if (!$borrowing) {
-            $pdo->rollBack();
+            $this->pdo->rollBack();
             echo "Borrowing record not found.\n";
             return;
         }
-
-        // Ensure the book is currently borrowed
         if (
             $borrowing['borrowing_status'] !== 'BORROWED'
             || $borrowing['return_date'] !== null
         ) {
-            $pdo->rollBack();
+            $this->pdo->rollBack();
             echo "This book is not currently borrowed. "
                 . "It may already be returned or marked as lost.\n";
             return;
         }
 
-        // Prevent duplicate lost-item fees
-        $check = $pdo->prepare(
+        $check = $this->pdo->prepare(
             "SELECT fee_id
              FROM fee
              WHERE borrowing_id = :borrowing_id
@@ -257,13 +243,12 @@ function markBookAsLost(PDO $pdo): void
         ]);
 
         if ($check->fetch()) {
-            $pdo->rollBack();
+            $this->pdo->rollBack();
             echo "A lost-item fee already exists for this borrowing.\n";
             return;
         }
 
-        // Mark the borrowing record as lost
-        $update = $pdo->prepare(
+        $update = $this->pdo->prepare(
             "UPDATE borrowing
              SET borrowing_status = 'LOST'
              WHERE borrowing_id = :borrowing_id
@@ -281,8 +266,23 @@ function markBookAsLost(PDO $pdo): void
             );
         }
 
-        // Create the lost-item fee
-        $insert = $pdo->prepare(
+        $copyUpdate = $this->pdo->prepare(
+            "UPDATE book_copy
+             SET copy_status = 'LOST'
+             WHERE copy_id = :copy_id
+               AND copy_status = 'BORROWED'"
+        );
+        $copyUpdate->execute([
+            'copy_id' => (int) $borrowing['copy_id']
+        ]);
+
+        if ($copyUpdate->rowCount() !== 1) {
+            throw new RuntimeException(
+                "Could not mark the physical copy as lost."
+            );
+        }
+
+        $insert = $this->pdo->prepare(
             "INSERT INTO fee
                 (user_id, borrowing_id, fee_type,
                  amount, fee_date, paid)
@@ -298,21 +298,23 @@ function markBookAsLost(PDO $pdo): void
             'fee_date' => date('Y-m-d')
         ]);
 
-        $pdo->commit();
+        $this->pdo->commit();
 
         echo "\nBook marked as lost successfully!\n";
         echo "User   : " . $borrowing['user_name'] . "\n";
         echo "Book   : " . $borrowing['title'] . "\n";
+        echo "Copy ID: " . $borrowing['copy_id'] . "\n";
         echo "Status : LOST\n";
-        echo "Fee    : Rs. "
+        echo "Fine    : Rs. "
             . number_format((float) $borrowing['price'], 2) . "\n";
         echo "Payment: Unpaid\n";
 
     } catch (Throwable $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
         }
 
         echo "Operation failed: " . $e->getMessage() . "\n";
     }
+}
 }

@@ -1,27 +1,36 @@
 <?php
 
-$host =  "localhost";
-$dbname = "library_db";
-$username = "root";
-$password = "";
+class Database
+{
+    private string $host = "localhost";
+    private string $dbname = "library_db";
+    private string $username = "root";
+    private string $password = "";
 
-try {
-    $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-        $username,
-        $password
-    );
+    private ?PDO $pdo = null;
 
-    $pdo->setAttribute(
-        PDO::ATTR_ERRMODE,
-        PDO::ERRMODE_EXCEPTION
-    );
+    public function connect(): PDO
+    {
+        try {
+            $this->pdo = new PDO(
+                "mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4",
+                $this->username,
+                $this->password
+            );
 
-    $pdo->setAttribute(
-        PDO::ATTR_DEFAULT_FETCH_MODE,
-        PDO::FETCH_ASSOC
-    );
+            $this->pdo->setAttribute(
+                PDO::ATTR_ERRMODE,
+                PDO::ERRMODE_EXCEPTION
+            );
 
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+            $this->pdo->setAttribute(
+                PDO::ATTR_DEFAULT_FETCH_MODE,
+                PDO::FETCH_ASSOC
+            );
+
+            return $this->pdo;
+        } catch (PDOException $e) {
+            die("Database connection failed: " . $e->getMessage());
+        }
+    }
 }

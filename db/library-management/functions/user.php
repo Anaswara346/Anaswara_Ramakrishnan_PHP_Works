@@ -1,8 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../config/database.php';
+require_once "config/database.php";
 
-// to read input from terminal
 
 function getInput(string $message): string
 {
@@ -10,32 +9,36 @@ function getInput(string $message): string
     return trim(fgets(STDIN));   
 }
 
-// To display all available user categories
-
-function viewUserCategory(PDO $pdo): void
+class UserManager
 {
+    private PDO $pdo;
 
-    $sql = "SELECT category_id, category_name, max_items, loan_days 
-            FROM user_category ORDER BY category_id";
-
-    $stmt = $pdo->query($sql);
-    $categories = $stmt->fetchAll();
-
-    echo "\n----- User Categories -----\n";
-
-    foreach ($categories as $category) {
-        echo "ID : {$category['category_id']} | ";
-        echo "Category: {$category['category_name']} | ";
-        echo "Maximum Items : {$category['max_items']} | ";
-        echo "Loan Days : {$category['loan_days']}\n";
-
+    public function __construct(PDO $connection)
+    {
+        $this->pdo = $connection;
     }
-}
 
-//To add a new library user
+    // to display all available user categories
+    public function viewUserCategory(): void
+    {
+        $sql = "SELECT category_id, category_name, max_items, loan_days
+                FROM user_category ORDER BY category_id";
 
-function addUser(PDO $pdo): void
-{
+        $stmt = $this->pdo->query($sql);
+        $categories = $stmt->fetchAll();
+
+        echo "\n----- User Categories -----\n";
+
+        foreach ($categories as $category) {
+            echo "ID : {$category['category_id']} | ";
+            echo "Category: {$category['category_name']} | ";
+            echo "Maximum Items : {$category['max_items']} | ";
+            echo "Loan Days : {$category['loan_days']}\n";
+        }
+    }
+
+    public function addUser(): void
+    {
     echo "\n---- Add Library User -----\n";
 
     $name = getInput("Enter user name : ");
@@ -52,7 +55,12 @@ function addUser(PDO $pdo): void
         return;
     }
 
-    viewUserCategory($pdo);
+    if (!preg_match('/^[6-9][0-9]{9}$/', $phone)) {
+        echo "Invalid Phone number\n";
+        return;
+    }
+
+    $this->viewUserCategory();
 
     $categoryId = getInput("Enter category ID : ");
 
@@ -65,7 +73,7 @@ function addUser(PDO $pdo): void
         return;
     }
 
-    $categoryCheck = $pdo->prepare(
+    $categoryCheck = $this->pdo->prepare(
         "SELECT category_id
         FROM user_category
         WHERE category_id= :category_id"
@@ -85,7 +93,7 @@ function addUser(PDO $pdo): void
                 VALUES (:name,:email, :phone, :category_id)";
 
     try {
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
 
         $stmt->execute([
             'name' => $name,
@@ -95,7 +103,7 @@ function addUser(PDO $pdo): void
         ]);
 
         echo "User added successfully\n";
-        echo "New User ID : " . $pdo->lastInsertId() . "\n";
+        echo "New User ID : " . $this->pdo->lastInsertId() . "\n";
     }  catch (PDOException $e) {
         if ($e->getCode() === '23000') {
             echo "Could not add user. The email may already exist.\n";
@@ -103,10 +111,10 @@ function addUser(PDO $pdo): void
             echo "Database error : " .$e->getMessage() . "\n";
         }
     }
-}
+    }
 
-function viewUsers(PDO $pdo): void 
-{
+    public function viewUsers(): void
+    {
     $sql ="SELECT 
             u.user_id,
             u.user_name,
@@ -119,7 +127,7 @@ function viewUsers(PDO $pdo): void
             ON u.category_id = c.category_id
           ORDER BY u.user_id";
 
-    $stmt = $pdo->query($sql);
+    $stmt = $this->pdo->query($sql);
     $users = $stmt->fetchAll();
 
     echo "\n--- ALL Library Users ---\n";
@@ -139,17 +147,16 @@ function viewUsers(PDO $pdo): void
     }
 
     echo "--------------------------------------------------\n";
-}
+    }
 
-function searchUser(PDO $pdo): void 
-{
+    public function searchUser(): void
+    {
     $keyword = getInput("Enter user name or email to search: ");
 
     if ($keyword === '') {
         echo "Search keyword cannot be empty\n";
         return;
     }
-
     $sql = "SELECT 
                 u.user_id,
                 u.user_name,
@@ -164,7 +171,7 @@ function searchUser(PDO $pdo): void
                 OR u.email LIKE :email
             ORDER BY u.user_id";
     
-    $stmt = $pdo->prepare($sql);
+    $stmt = $this->pdo->prepare($sql);
 
     $searchTerm = '%' . $keyword . '%';
 
@@ -174,7 +181,6 @@ function searchUser(PDO $pdo): void
     ]);
 
     $users = $stmt->fetchAll();
-
     if (empty($users)) {
         echo "No matching users found.\n";
         return;
@@ -192,11 +198,10 @@ function searchUser(PDO $pdo): void
     }
 
     echo "---------------------------------------------\n";
+    }
 
-}
-
-function updateUser(PDO $pdo): void  
-{
+    public function updateUser(): void
+    {
     echo "\n----- Update Library User ---\n";
 
     $userId = getInput("Enter user ID to update: ");
@@ -208,7 +213,7 @@ function updateUser(PDO $pdo): void
     
     // find the existing user
 
-    $stmt = $pdo->prepare(
+    $stmt = $this->pdo->prepare(
         "SELECT * FROM library_user WHERE user_id = :id"
     );
 
@@ -251,7 +256,7 @@ function updateUser(PDO $pdo): void
     $categoryId = (int) $user['category_id'];
 
     if ($changeCategory === 'yes') {
-        viewUserCategory($pdo);
+        $this->viewUserCategory();
     
         $newCategory = getInput("Enter new category ID: ");
 
@@ -264,7 +269,7 @@ function updateUser(PDO $pdo): void
             return;
         }
 
-        $check = $pdo->prepare(
+        $check = $this->pdo->prepare(
             "SELECT category_id
             FROM user_category
             WHERE category_id = :id"
@@ -288,7 +293,7 @@ function updateUser(PDO $pdo): void
             WHERE user_id = :id";
     
     try {
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
 
         $stmt->execute([
             'name' => $name,
@@ -306,15 +311,15 @@ function updateUser(PDO $pdo): void
             echo "Database error: " .$e->getMessage() . "\n";
         }
     }
-}
+    }
 
-function updateUserStatus(PDO $pdo): void
-{
-    viewUsers($pdo);
+    public function updateUserStatus(): void
+    {
+    $this->viewUsers();
 
     $userId = (int) getInput("Enter user ID : ");
 
-    $stmt = $pdo->prepare(
+    $stmt = $this->pdo->prepare(
             "SELECT user_id, user_name, account_status
             FROM library_user
             WHERE user_id = :user_id"
@@ -335,14 +340,14 @@ function updateUserStatus(PDO $pdo): void
     echo "\nSelect New Account Status: \n";
     echo "1. ACTIVE\n";
     echo "2. INACTIVE\n";
-    echo "3. SUSPENDED\n";
+    
 
     $choice = (int) getInput("Enter your choice: ");
 
     $statuses = [
         1 => 'ACTIVE',
         2 => 'INACTIVE',
-        3 => 'SUSPENDED'
+       
     ];
 
     if (!isset($statuses[$choice])) {
@@ -352,7 +357,7 @@ function updateUserStatus(PDO $pdo): void
 
     $newStatus = $statuses[$choice];
 
-    $stmt = $pdo->prepare(
+    $stmt = $this->pdo->prepare(
         "UPDATE library_user
          SET account_status = :status
         WHERE user_id = :user_id"
@@ -364,10 +369,10 @@ function updateUserStatus(PDO $pdo): void
     ]);
 
     echo "Account status updated to $newStatus successfully\n";
-}
+    }
 
-function deleteUser(PDO $pdo): void 
-{
+    public function deleteUser(): void
+    {
     echo "\n--- Delete Library User ----\n";
 
     $userId = getInput("Enter user ID to delete: ");
@@ -377,7 +382,7 @@ function deleteUser(PDO $pdo): void
         return;
     }
 
-    $stmt = $pdo->prepare(
+    $stmt = $this->pdo->prepare(
         "SELECT user_id, user_name 
         FROM library_user 
         WHERE user_id = :id"
@@ -393,7 +398,7 @@ function deleteUser(PDO $pdo): void
 
     // to preserve who have borrowing history or fees
 
-    $history = $pdo->prepare(
+    $history = $this->pdo->prepare(
         "SELECT 
             EXISTS (
                 SELECT 1 FROM borrowing WHERE user_id = :borrow_user)
@@ -424,13 +429,14 @@ function deleteUser(PDO $pdo): void
         return;
     }
 
-    $stmt = $pdo->prepare(
+    $stmt = $this->pdo->prepare(
         "DELETE FROM library_user WHERE user_id = :id"
     );
 
     $stmt->execute(['id' => (int) $userId]);
 
     echo "User deleted successfully\n";
+}
 }
 
 ?>
