@@ -78,33 +78,33 @@ MySQL and PostgreSQL are both open-source Relational Database Management System 
 1. Auto-increment
 
 MySQL 
->```id INT AUTO_INCREMENT PRIMARY KEY``` 
+```id INT AUTO_INCREMENT PRIMARY KEY``` 
 
 PostgreSQL  
->``` id SERIAL PRIMARY KEY``` 
+``` id SERIAL PRIMARY KEY``` 
 
 2. NULL Handling
 
 MySQL  
 
->```IFNULL(phone,'Not Provided')``` 
+```IFNULL(phone,'Not Provided')``` 
 
 PostgreSQL  
 
->```COALESCE(phone, 'Not Provided')```
+```COALESCE(phone, 'Not Provided')```
 
 3. String Concatenation 
 
 MySQL  
 
->``` SELECT CONCAT(first_name, ' ', last_name);```
+``` SELECT CONCAT(first_name, ' ', last_name);```
 
 PostgreSQL  
 
->``` SELECT first_name || ' ' || last_name;```
+``` SELECT first_name || ' ' || last_name;```
 
 
->#### Note: COALESCE(), CASE, CONCAT(), LIMIT, JOIN, GROUP BY and ORDER BY are supported in both databases.
+>Note: COALESCE(), CASE, CONCAT(), LIMIT, JOIN, GROUP BY and ORDER BY are supported in both databases.
 
 ## Conclusion 
 MySQL and PostgreSQL are both powerful relational database management systems. MySQL is commonly used in web applications, while PostgreSQL provides a broader range of advanced SQL features, datatypes and indexing options. The choice between them depends on the application's requirements and complexity. 
