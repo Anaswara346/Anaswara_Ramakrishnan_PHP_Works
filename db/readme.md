@@ -77,10 +77,12 @@ MySQL and PostgreSQL are both open-source Relational Database Management System 
 
 1. Auto-increment
 
-MySQL 
+MySQL  
+
 ```id INT AUTO_INCREMENT PRIMARY KEY``` 
 
-PostgreSQL  
+PostgreSQL   
+
 ``` id SERIAL PRIMARY KEY``` 
 
 2. NULL Handling
