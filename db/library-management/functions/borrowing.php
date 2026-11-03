@@ -259,19 +259,16 @@ class BorrowingManager
         }
     }
 
-
-
-
     public function returnItem(): void
     {
-        echo "\n--- Return the Book ---\n";
+        echo "\n---- Return the Book ---\n";
 
         $borrowingId = (int) getInput("Enter Borrowing ID: ");
 
         try {
             $this->pdo->beginTransaction();
 
-            //  borrowing details and the user's late fee
+            //  borrowing details and the users late fee
             $sql = "SELECT
                         b.borrowing_id,
                         b.user_id,
@@ -338,7 +335,7 @@ class BorrowingManager
             $lateFee = $lateDays * (float) $borrowing['late_fee_per_day'];
             $fineStartDate = (clone $dueDate)->modify('+1 day')->format('Y-m-d');
 
-            // update the return date
+            // update the return date to be in borrowing
             $update = $this->pdo->prepare(
                 "UPDATE borrowing
                 SET return_date = :return_date,

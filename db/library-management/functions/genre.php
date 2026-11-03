@@ -116,8 +116,6 @@ class GenreManager
     echo "---------------------------------\n";
 }
 
-//search game
-
     public function searchGenre(): void
     {
     $keyword = getInput("Enter genre name to search : ");

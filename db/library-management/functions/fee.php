@@ -54,7 +54,7 @@ class FeeManager
                 . ($fee['payment_date']
                     ?? ($fee['paid'] ? 'Not recorded' : 'Not paid')) . "\n";
 
-            echo "-------------------------------------------------------\n";
+            echo "------------------------------------------------------\n";
         }
     }
 
@@ -103,7 +103,7 @@ class FeeManager
     $stmt = $this->pdo->query($sql);
     $bookRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo "\n========== REVENUE BY BOOK ===-======\n";
+    echo "\n======== REVENUE BY BOOK ========\n";
 
     if (empty($bookRevenue)) {
         echo "No book-related fee records found.\n";
