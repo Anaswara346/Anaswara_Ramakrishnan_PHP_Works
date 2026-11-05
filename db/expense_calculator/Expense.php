@@ -289,5 +289,19 @@ class Expense
                 echo "Error : " . $e->getMessage(). "\n";
             }
     }
+
+    public function reportMenu()
+    {
+        echo "\n============ FINANCIAL REPORTS =========\n";
+        echo "1. Overall Financial Report\n";
+        echo "2. Monthly Financial Report\n";
+        echo "3. Yearly Financial Report\n";
+        echo "4. Category-wise Expense Report\n";
+        echo "5. Date-wise Financial Report\n";
+        echo "6. Back to Main Menu\n";
+
+        echo "Enter your choice : ";
+        return trim(fgets(STDIN));
+    }
 }
 
