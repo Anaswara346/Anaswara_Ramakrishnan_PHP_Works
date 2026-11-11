@@ -1,0 +1,77 @@
+/* /* This are Element selectors 
+Select all elements of a particular type*/
+
+/* p {
+    color: green;
+    font-size: 20px;
+} */
+
+button {
+    color: red;
+}
+
+option {
+    color: brown;
+}
+
+h1 {
+    color: coral;
+}
+
+/* Class Selectors - it uses the dot(.) */
+
+.heading {
+    color: darkorchid;
+}
+
+.description {
+    color: gold;
+    font-size: 19px;
+    font-family:'Times New Roman', Times, serif;
+}
+
+/* Id selector - selects an element with a particular ID  [uses the # ]*/
+
+#sub-title {
+    color: crimson;
+    text-align: center;
+}
+
+/* Descendant Selector - Selects an element inside another element*/
+
+/* .container p,h2 {
+    color: darkblue;
+}
+  */
+
+.box1 {
+    display: inline-block;    /* Starts on a new line and takes available widt*/
+    background-color: lightblue;
+}
+
+.box2 { 
+    display: block;  /* Stays within the same line and takes required width*/
+    background-color: lightgreen;
+}
+
+.box3 {
+    display: inline;   /* Stays inline but supports width and height*/
+    background-color: lightcoral;
+}
+ 
+
+.container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 200;
+    
+}
+
+.item {
+    background-color: rgb(108, 175, 197);
+    padding: 20px;
+    border: 1px solid rgb(255, 0, 13);
+}

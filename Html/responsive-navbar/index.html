@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kirei</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="logo">
+               ♥ Kirei ♥
+            </div>
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-icon">
+                <span>&#9776</span> 
+            </label>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <!-- Home Section  -->
+
+        <section class="home-section" id="home">
+            <div class="home-content">
+                <h2>Build Your Digital Future</h2>              
+                <p>We create modern websites and digital solutions that help 
+                    businesses grow and connect with their customers.</p>
+                <!-- <button type="button">Explore Services</button>
+                <button type="button">Contact Us</button> -->
+                <a href="#services">Explore Services</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+            <div class="home-image">
+                <img src="home.png" alt="Home Page">
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about-section" id="about">
+            <h2>About Us</h2>
+            <div class="about-container">
+                <div class="about-image">
+                    <img src="about.png" alt="About Page">
+                </div>
+                <div class="about-content">
+                    <h3>We Build Digital Experience</h3>
+                    <p>
+                        Kirei is a digital solutions company focused
+                on helping businesses grow through modern technology.
+                    </p>
+                    <h4>Our Mission</h4>
+                    <p>To deliver simple, effective and innovative
+                        digital solutions.
+                    </p>
+                    <a href="#contact">Learn More</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Service Section -->
+        <section class="service-section" id="services">
+            <h2>Our Services</h2>
+            <p>We provide digital solutions to help your business grow.</p>
+            <div class="service-container">
+                <div class="service-card">
+                    <img src="webdev.png" alt="Web Development">
+                    <h3>Web Development</h3>
+                    <p>Modern and responsive websites.</p>
+                </div>
+                <div class="service-card">
+                    <img src="ux.png" alt="UI UX Design">
+                    <h3>UI/UX Design</h3>
+                    <p>User-friendly digital experiences.</p>
+                </div>
+
+                <div class="service-card">
+                    <img src="app.png" alt="App Development">
+                    <h3>App Development</h3>
+                    <p>Useful mobile applications.</p>
+                </div>
+
+                <div class="service-card">
+                    <img src="digital.png" alt="Digital Marketing">
+                    <h3>Digital Marketing</h3>
+                    <p>Grow your online presence.</p>
+                </div>
+            </div>
+        </section>
+
+         <!-- Blog section -->
+          <section class="blog-section" id="blog">
+            <h2>Our Latest Blogs</h2>
+            <p>Explore our latest insights and artcles on technology.</p>
+
+            <div class="blog-container">
+                <div class="blog-card">
+                    <img src="blog1.png" alt="Blog image">
+
+                    <h3>Introduction to Python</h3>
+                    <p>Learn the basics of Python programming.</p>
+                    <a href="#">Read More</a>
+                </div>
+                <div class="blog-card">
+                    <img src="blog3.png" alt="Blog image">
+                    <h3>Modern CSS Techniques</h3>
+                    <p>Discover useful CSS styling techniques.</p>
+                    <a href="#">Read More</a>
+                </div>
+                <div class="blog-card">
+                    <img src="blog2.png" alt="Blog image">
+                    <h3>Future of AI</h3>
+                    <p>Explore how AI is changing technology.</p>
+                    <a href="#">Read More</a>
+                </div>
+            </div>
+          </section>
+
+        <!-- Pricing Card Section -->
+         <section class="pricing-section">
+            <h1> Our Pricing Plans</h1>
+            <p>Choose a plan that suits your needs.</p>
+
+            <div class="pricing-container">
+                <div class="pricing-card">
+                    <h2>&#8377;299/-month</h2>
+                    <h3>Basic</h3>
+                    <p>Suitable for beginners</p>
+                    <ul id="lists">
+                        <li>Email Support</li>
+                        <li>Basic Access</li>
+                        <li>Basic Features</li>
+                    </ul>
+                    <button type="button">Subscribe</button>
+                </div>
+                <div class="pricing-card">
+                    <h2>&#8377;599/-month</h2>
+                    <h3>Standard</h3>
+                    <p>Suitable for Intermediate</p>
+                    <ul id="lists">
+                        <li>Priority Support</li>
+                        <li>4 features</li>
+                        <li>Intermediate Features</li>
+                    </ul>
+                    <button type="button">Subscribe</button>
+                </div>
+
+                <div class="pricing-card">
+                     <h2>&#8377;999/-month</h2>
+                    <h3>Premium</h3>
+                    <p>Suitable for professionals</p>
+                    <ul id="lists">
+                        <li>24/7 Support</li>
+                        <li>Premium Access</li>
+                        <li>Premium Features</li>
+                    </ul>
+                    <button type="button">Subscribe</button>
+                </div>
+            </div>
+         </section>
+
+        <!-- Contact Section -->
+         <section class="contact-section" id="contact">
+            <h2>Contact Us</h2>
+             <form class="contact-form">
+
+                <label for="name">Name</label>
+                <input type="text" id="name" placeholder="Enter your name">
+
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter your email">
+
+                <label for="message">Message</label>
+                <textarea id="message" placeholder="Write your message..."></textarea>
+
+                <button type="submit">Send Message</button>
+
+            </form>
+         </section> 
+
+         <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-about">
+                    <h2>Kirei</h2>
+                    <p>We build modern digital solutions to
+                        help business grow.
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <a href="#home">Home</a>
+                    <a href="#about">Home</a>
+                    <a href="#service">Services</a>
+                    <a href="#blog">Blogs</a>
+                    <a href="#contact">Contact Us</a>
+                </div>
+                <div class="footer-services">
+                    <h3>Our Services</h3>
+                    <a href="#services">Web Development</a>
+                    <a href="#services">UI/UX Design</a>
+                    <a href="#services">App Development</a>
+                    <a href="#services">Digital Marketing</a>
+                </div>
+                <div class="footer-contact">
+                    <h3>Contact Info</h3>
+                    <p>Email: info@kirei.com</p>
+                    <p>Phone: +91 98765 43210</p>
+                    <p>Kerala, India</p>
+                </div>
+            </div>
+             <div class="footer-bottom">
+                <p>© 2026 Kirei. All Rights Reserved.</p>
+            </div>
+         </footer>
+    </body>
+</html>

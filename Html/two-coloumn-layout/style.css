@@ -1,0 +1,142 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    /* background-color: #ffffff; */
+    animation: backgroundChange 10s infinite alternate;
+}
+/* Background animation */
+@keyframes backgroundChange {
+    0% {
+        background-color: #e0f2fe;
+    }
+    25% {
+        background-color: #e0e7ff;
+    }
+    50% {
+        background-color: #fce7f3;
+    }
+    75% {
+        background-color: #dcfce7;
+    }
+    100% {
+        background-color: #fef3c7;
+    }
+}
+
+/* Main container */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+
+    width: 90%;
+    max-width: 1200px;
+    min-height: 550px;
+    margin: 40px auto;
+}
+
+/* Text column */
+.text-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.text-content h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #222222;
+}
+
+.text-content p {
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 25px;
+    color: #555555;
+}
+
+/* Image column */
+.image-content {
+    flex: 1;
+}
+
+.image-content img {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+}
+
+/* Button */
+.text-content button {
+    padding: 12px 22px;
+    background-color: #3157a8;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.text-content button:hover {
+    background-color: #3a0a75;
+    transform: scale(1.06);
+    transition: 0.3s;
+}
+
+.container {
+    background-color: rgba(186, 221, 215, 0.667);
+    padding: 40px;
+    border-radius: 10px;
+}
+
+/* shadow effect */
+
+.container {
+ /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); */
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    
+}
+
+.image-content img {
+    transition: transform 0.3s ease;
+}
+
+.image-content img:hover {
+    transform: scale(1.06);
+    transition: 0.3s ease-in-out;
+}
+
+/* Responsive layout */
+
+@media (max-width: 768px) {
+
+    .container {
+        flex-direction: column;
+        width: 90%;
+        gap: 25px;
+        margin: 25px auto;
+    }
+
+    .text-content,
+    .image-content {
+        width: 100%;
+    }
+
+    .text-content {
+        padding: 10px 0;
+    }
+
+    .text-content h1 {
+        font-size: 26px;
+    }
+
+    .image-content img {
+        height: 300px;
+    }
+}
