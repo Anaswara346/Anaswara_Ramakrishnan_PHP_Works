@@ -1,0 +1,138 @@
+body {
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+.todo-container{
+    background-color: rgb(255, 255, 255);
+    min-width: 400px;
+    min-height: 300px;
+    padding: 50px 8%;
+    text-align: center;
+    padding-bottom: 80px;
+    border: 1px solid #c65959;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(210, 22, 157, 0.15);
+}
+ h1{
+    color: black;
+ }
+
+/* .input-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+} */
+#taskinput {
+    width: 300px;
+    height: 10px;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid;
+    /* border: 1px solid #ccc;
+    outline: none;
+    box-sizing: border-box; */
+}
+
+#addBtn {
+    background-color: #16A34A;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    font-family: 'Poppins';
+    font-size: 17px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+    margin-top: 10px;
+
+}
+
+#addBtn:hover{
+    background-color: #15803D;
+    transform: translateY(-2px)
+}
+
+#addBtn:active {
+    transform: scale(0.95);
+}
+
+#tasklist {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+#tasklist li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background-color: #16A34A;
+    border-radius: 8px;
+    color: white;
+    font-size: 18px;
+
+}
+
+#tasklist li input {
+    flex: 1;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #2563EB;
+    border-radius: 5px;
+    font-size: 15px;
+}
+#tasklist li span {
+    flex: 1;
+}
+
+#tasklist li button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+#tasklist li button:first-of-type:hover {
+    background-color: #1D4ED8;
+}
+
+#tasklist li button:last-of-type:hover {
+    background-color: #991B1B;
+}
+
+#tasklist li button:first-of-type {
+    background-color: #2563EB;
+}
+
+#tasklist li button:last-of-type {
+    background-color: #DC2626;
+}
+
+@media (max-width: 480px) {
+
+    .todo-container {
+        width: 90%;
+        min-width: 0;
+        padding: 15px;
+    }
+
+    .input-section {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    #taskinput {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+}
