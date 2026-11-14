@@ -1,0 +1,35 @@
+Concept	Most important classes
+Grid	container, row, col-md-4
+Buttons	btn, btn-primary, btn-outline-*
+Cards	card, card-body
+Navbar	navbar, navbar-expand-lg
+Spacing	m-3, p-3, mt-3
+Responsive	d-none, d-md-block
+Modal	modal, modal-dialog
+Alerts	alert, alert-success
+Sidebar	navbar-vertical
+Tables	table, table-hover
+Forms	form-control, form-select
+
+
+Important classes:
+========================
+- page-header – Tabler page heading layout.
+- page-title – Heading styling.
+- row – Grid layout.
+- align-items-center – Vertically aligns elements.
+- col-auto – Takes only the required width.
+- ms-auto – Pushes the button to the right.
+
+
+Important modal attributes:
+==========================
+Attribute	Purpose
+data-bs-toggle="modal"	Opens modal
+data-bs-target="#userModal"	Identifies which modal to open
+data-bs-dismiss="modal"	Closes modal
+modal-dialog	Popup positioning
+modal-content	Modal content wrapper
+modal-header	Modal heading
+modal-body	Main content
+modal-footer	Footer buttons

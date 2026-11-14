@@ -1,0 +1,428 @@
+body {
+    background: #f6f7fb;
+}
+
+html {
+    overscroll-behavior: none;
+}
+.dashboard-shell {
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse at 5% 0%, rgba(116, 94, 230, 0.08), transparent 34rem),
+        #f6f7fb;
+     /* animation: backgroundChange 10s infinite alternate; */
+}
+
+.custom-header {
+    padding: 1.5rem 0 1.75rem;
+    border-bottom: 1px solid #e8eaf1;
+}
+
+.custom-header .page-title {
+    padding: 0 !important;
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 750;
+    letter-spacing: -0.05em;
+}
+
+.dashboard-subtitle {
+    color: #707789;
+}
+
+.add-user-button {
+    border: 0;
+    border-radius: 0.8rem;
+    padding-inline: 1.25rem;
+    background: linear-gradient(120deg, #6653d9, #8862e8);
+    box-shadow: 0 0.5rem 1.25rem rgba(102, 83, 217, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.add-user-button:hover {
+    background: linear-gradient(120deg, #5945cb, #7953d9);
+    transform: scale(1.06);
+}
+
+.dashboard-box {
+    min-height: 12.5rem;
+    padding: 1.35rem 1.5rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: 1rem;
+    color: #fff;
+    /* box-shadow: 0 0.75rem 1.75rem rgba(45, 54, 91, 0.12);
+    transition: transform 160ms ease, box-shadow 160ms ease; */
+    box-shadow: 0 5px 15px rgba(41, 53, 104, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-box:hover {
+    /* transform: translateY(-3px);
+    box-shadow: 0 1rem 2rem rgba(45, 54, 91, 0.17); */
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Table header styling */
+.card-table thead th {
+    font-size: 14px !important;
+    font-weight: bold !important;
+}
+.card-table thead th:nth-child(3) {
+    padding-left: 24px;
+}
+
+
+/* Role column alignment */
+.card-table thead th:nth-child(3),
+.card-table tbody td:nth-child(3) {
+    text-align: left;
+}
+/* #saveUser{
+    background: linear-gradient(135deg, #6854d9, #9367e9);
+} */
+
+
+.box-purple {
+    background: linear-gradient(135deg, #6854d9, #9367e9);
+}
+
+.box-blue {
+    background: linear-gradient(135deg, #3478d4, #42a8db);
+}
+
+.box-teal {
+    background: linear-gradient(135deg, #148d91, #39bfa7);
+}
+
+.box-icon {
+    display: grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    margin-bottom: 1.1rem;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 1.4rem;
+}
+
+.box-label,
+.box-note {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.box-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.box-value {
+    margin-top: 0.2rem;
+    font-size: 2rem;
+    font-weight: 750;
+    letter-spacing: -0.04em;
+    line-height: 1.2;
+}
+
+.box-value-name {
+    overflow: hidden;
+    font-size: clamp(1.25rem, 2vw, 1.65rem);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.box-note {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.role-breakdown {
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 0.45rem;
+}
+
+.role-breakdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.85rem;
+}
+
+.role-breakdown-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.role-breakdown-item strong {
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.user-form-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    
+}
+
+.user-form-section .card,
+.dashboard-shell > .container-xl > .card {
+    overflow: hidden;
+    border: 1px solid #eaecf2;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(39, 49, 85, 0.05);
+}
+
+.dashboard-shell .table {
+    margin-bottom: 0;
+}
+
+.dashboard-shell .table thead th {
+    padding-block: 0.9rem;
+    color: #707789;
+    background: #fafbfe;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.dashboard-shell .table tbody td {
+    padding-block: 1rem;
+}
+
+.empty-state {
+    padding: 2.5rem !important;
+    color: #707789;
+    text-align: center;
+}
+
+.user-form-section .card-header {
+    padding: 1.15rem 1.25rem;
+    background: #fff;
+}
+
+.user-form-section .card-body {
+    padding: 1.25rem;
+}
+
+.modal-content {
+    overflow: hidden;
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 1.5rem 4rem rgba(28, 35, 63, 0.2);
+}
+
+@media (max-width: 575.98px) {
+    .custom-header {
+        padding-block: 1rem 1.25rem;
+    }
+
+    .add-user-button {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-box {
+        transition: none;
+    }
+}
+
+:root {
+    --dashboard-ink: #20263a;
+    --dashboard-muted: #707789;
+    --dashboard-border: #e7eaf2;
+    --dashboard-accent: #6653d9;
+}
+
+body {
+    color: var(--dashboard-ink);
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.custom-header .page-title {
+    color: var(--dashboard-ink) !important;
+    font-size: clamp(1.9rem, 3.2vw, 2.5rem);
+    font-weight: 750;
+    line-height: 1.15;
+    letter-spacing: -0.055em;
+}
+
+.dashboard-subtitle,
+.text-secondary {
+    color: var(--dashboard-muted) !important;
+}
+
+.dashboard-shell h2 {
+    color: var(--dashboard-ink);
+    font-size: clamp(1.35rem, 2vw, 1.65rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+}
+
+.dashboard-box {
+    position: relative;
+    isolation: isolate;
+}
+
+.dashboard-box > * {
+    position: relative;
+    z-index: 1;
+}
+
+.dashboard-box::after {
+    position: absolute;
+    z-index: 0;
+    right: -2.5rem;
+    bottom: -3.5rem;
+    width: 10rem;
+    height: 10rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    content: "";
+    pointer-events: none;
+}
+
+.box-label {
+    font-size: 0.875rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+}
+
+.box-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.add-user-button {
+    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.add-user-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.7rem 1.5rem rgba(102, 83, 217, 0.28);
+}
+
+.add-user-button:active {
+    transform: translateY(0);
+}
+
+.dashboard-shell > .container-xl > .card {
+    border-color: var(--dashboard-border);
+}
+
+.dashboard-shell .table thead th {
+    font-size: 0.72rem;
+    letter-spacing: 0.075em;
+}
+
+.dashboard-shell .table tbody tr {
+    transition: background-color 140ms ease;
+}
+
+.dashboard-shell .table tbody tr:hover {
+    background-color: #f8f8fd;
+}
+
+.dashboard-shell .table tbody td {
+    color: #41485b;
+    font-size: 0.925rem;
+}
+
+.dashboard-shell .table tbody td:first-child {
+    color: var(--dashboard-ink);
+    font-weight: 600;
+}
+
+.dashboard-shell .badge {
+    padding: 0.38rem 0.62rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 650;
+}
+
+.user-form-section .card-header {
+    border-bottom-color: var(--dashboard-border);
+}
+
+.user-form-section .card-title,
+.modal-title {
+    color: var(--dashboard-ink);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.form-label {
+    margin-bottom: 0.45rem;
+    color: #41485b;
+    font-size: 0.875rem;
+    font-weight: 650;
+}
+
+.form-control,
+.form-select {
+    min-height: 2.8rem;
+    border-color: #dfe3ed;
+    border-radius: 0.7rem;
+    color: var(--dashboard-ink);
+    font-size: 0.925rem;
+}
+
+.form-control::placeholder {
+    color: #9aa1b1;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #9386e8;
+    box-shadow: 0 0 0 0.22rem rgba(102, 83, 217, 0.13);
+}
+
+.btn {
+    border-radius: 0.65rem;
+    font-weight: 600;
+}
+
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+    outline: 2px solid var(--dashboard-accent);
+    outline-offset: 2px;
+}
+
+.alert {
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 575.98px) {
+    .dashboard-box {
+        min-height: 11.5rem;
+    }
+
+    .user-form-section .card-body {
+        padding: 1rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-shell .table tbody tr,
+    .add-user-button {
+        transition: none;
+    }
+
+    .add-user-button:hover,
+    .add-user-button:active {
+        transform: none;
+    }
+}
