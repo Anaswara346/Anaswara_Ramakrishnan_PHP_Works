@@ -72,7 +72,7 @@ class InventoryManagement
         'lost' => "bc.copy_status = 'LOST'",
     ];
     $available = $pdo->query(
-        "SELECT bc.copy_id, b.item_id, b.title, b.price,
+        "SELECT bc.copy_id AS book_id, b.title, b.price,
                 CASE WHEN bc.copy_status = 'LOST' THEN 'LOST'
                      WHEN bc.copy_status = 'BORROWED' AND br.due_date < CURDATE() THEN 'OVERDUE'
                      WHEN bc.copy_status = 'BORROWED' THEN 'BORROWED'
@@ -92,8 +92,8 @@ class InventoryManagement
          ORDER BY b.item_id, bc.copy_id"
     )->fetchAll();
     $history = $pdo->query(
-        "SELECT b.item_id, b.title, b.isbn, b.physical_format, b.price, g.genre_name,
-                bc.copy_id, bc.date_added,
+        "SELECT bc.copy_id AS book_id, b.title, b.isbn, b.physical_format, b.price, g.genre_name,
+                bc.date_added,
                 CASE WHEN bc.copy_status = 'LOST' THEN 'LOST'
                      WHEN bc.copy_status = 'BORROWED' AND active.due_date < CURDATE() THEN 'OVERDUE'
                      ELSE bc.copy_status END AS copy_status,
@@ -141,13 +141,13 @@ class InventoryManagement
         <?php if ($view === 'history'): ?>
             <h2>Inventory history</h2>
             <?php if ($history === []): ?><p>No inventory records found.</p><?php else: ?>
-                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>Book ID</th><th>Title</th><th>Genre</th><th>ISBN</th><th>Format</th><th>Price</th><th>Copy ID</th><th>Date added</th><th>Status</th><th>Due date</th><th>Borrow count</th><th>Last borrowed</th></tr></thead><tbody>
+                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>Book ID</th><th>Title</th><th>Genre</th><th>ISBN</th><th>Format</th><th>Price</th><th>Date added</th><th>Status</th><th>Due date</th><th>Borrow count</th><th>Last borrowed</th></tr></thead><tbody>
                 <?php foreach ($history as $copy): ?><tr>
-                    <td><?= (int) $copy['item_id'] ?></td><td><?= $this->webInventoryEscape($copy['title']) ?></td>
+                    <td><?= (int) $copy['book_id'] ?></td><td><?= $this->webInventoryEscape($copy['title']) ?></td>
                     <td><?= $this->webInventoryEscape($copy['genre_name'] ?? 'Not assigned') ?></td>
                     <td><?= $this->webInventoryEscape($copy['isbn'] ?? 'Not provided') ?></td><td><?= $this->webInventoryEscape($copy['physical_format']) ?></td>
                     <td><?= number_format((float) $copy['price'], 2) ?></td>
-                    <td><?= (int) $copy['copy_id'] ?></td><td><?= $this->webInventoryEscape($copy['date_added']) ?></td>
+                    <td><?= $this->webInventoryEscape($copy['date_added']) ?></td>
                     <td><?= $this->webInventoryEscape($copy['copy_status']) ?></td><td><?= $this->webInventoryEscape($copy['due_date'] ?? 'Not borrowed') ?></td>
                     <td><?= (int) $copy['total_borrowings'] ?></td><td><?= $this->webInventoryEscape($copy['last_borrow_date'] ?? 'Never') ?></td>
                 </tr><?php endforeach; ?>
@@ -162,11 +162,11 @@ class InventoryManagement
                 <button type="submit" name="status" value="lost">Lost Books</button>
             </form>
             <?php if ($available === []): ?><p>No copies found in the inventory.</p><?php else: ?>
-                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>Book ID</th><th>Title</th><th>Price</th><th>Copy ID</th><th>Status</th><?php if ($statusFilter !== 'lost'): ?><th>Due date</th><?php else: ?><th>Reported lost date</th><?php endif; ?></tr></thead><tbody>
+                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>Book ID</th><th>Title</th><th>Price</th><th>Status</th><?php if ($statusFilter !== 'lost'): ?><th>Due date</th><?php else: ?><th>Reported lost date</th><?php endif; ?></tr></thead><tbody>
                 <?php foreach ($available as $copy): ?><tr>
-                    <td><?= (int) $copy['item_id'] ?></td><td><?= $this->webInventoryEscape($copy['title']) ?></td>
+                    <td><?= (int) $copy['book_id'] ?></td><td><?= $this->webInventoryEscape($copy['title']) ?></td>
                     <td><?= number_format((float) $copy['price'], 2) ?></td>
-                    <td><?= (int) $copy['copy_id'] ?></td><td><?= $this->webInventoryEscape($copy['inventory_status']) ?></td>
+                    <td><?= $this->webInventoryEscape($copy['inventory_status']) ?></td>
                     <?php if ($statusFilter === 'lost'): ?>
                         <td><?= $this->webInventoryEscape($copy['reported_lost_date'] ?? 'Unknown') ?></td>
                     <?php else: ?>

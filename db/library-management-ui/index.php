@@ -24,6 +24,7 @@ $pages = [
     ['Genre Management', 'functions/genre.php'],
     ['Book Management', 'functions/book.php'],
     ['Borrowing Management', 'functions/borrowing.php'],
+    ['Book Renewals', 'functions/renewal.php'],
     ['Book History & Inventory', 'functions/inventory.php'],
     ['Fines & Payments', 'functions/fee.php'],
 ];

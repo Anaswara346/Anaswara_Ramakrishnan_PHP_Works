@@ -26,7 +26,7 @@ class BookFeeHistory
         }
 
         $historyQuery = $pdo->prepare(
-            "SELECT br.borrowing_id, br.copy_id, u.user_name, u.email,
+            "SELECT br.borrowing_id, br.copy_id AS book_id, u.user_name, u.email,
                     br.borrow_date,
                     CASE WHEN br.borrowing_status = 'LOST'
                          THEN (SELECT MIN(f.fee_date) FROM fee f
@@ -70,7 +70,7 @@ class BookFeeHistory
                 <table border="3" cellpadding="5" cellspacing="3" bordercolor="black">
                     <thead>
                         <tr>
-                            <th>Borrowing ID</th><th>User</th><th>Email</th><th>Copy ID</th>
+                            <th>Borrowing ID</th><th>User</th><th>Email</th><th>Book ID</th>
                             <th>Borrowed</th><th>Due / Reported lost</th><th>Returned</th><th>Status</th>
                             <th>Late fines</th><th>Lost fees</th><th>Collected</th><th>Outstanding</th>
                         </tr>
@@ -81,7 +81,7 @@ class BookFeeHistory
                                 <td><?= (int) $record['borrowing_id'] ?></td>
                                 <td><?= $this->escape($record['user_name']) ?></td>
                                 <td><?= $this->escape($record['email']) ?></td>
-                                <td><?= (int) $record['copy_id'] ?></td>
+                                <td><?= (int) $record['book_id'] ?></td>
                                 <td><?= $this->escape($record['borrow_date']) ?></td>
                                 <td><?= $this->escape($record['history_date'] ?? 'Unknown') ?></td>
                                 <td><?= $this->escape($record['return_date'] ?? 'Not returned') ?></td>

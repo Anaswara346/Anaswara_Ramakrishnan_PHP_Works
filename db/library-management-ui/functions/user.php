@@ -157,6 +157,7 @@ class UserManagement
 
     $action = isset($_GET['action']) && is_string($_GET['action']) ? $_GET['action'] : '';
     $selectedUser = null;
+    $borrowHistory = [];
     if (in_array($action, ['view', 'edit'], true)) {
         $userId = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1],
@@ -189,6 +190,23 @@ class UserManagement
         if (!$selectedUser) {
             http_response_code(404);
             exit('User not found.');
+        }
+        if ($action === 'view') {
+            $historyStatement = $pdo->prepare(
+                "SELECT br.borrowing_id, br.copy_id AS book_id, b.title,
+                        br.borrow_date, br.due_date, br.return_date,
+                        DATEDIFF(COALESCE(br.return_date, CURDATE()), br.borrow_date) AS days_held,
+                        CASE WHEN br.borrowing_status = 'LOST' THEN 'LOST'
+                             WHEN br.return_date IS NOT NULL THEN 'RETURNED'
+                             WHEN br.borrowing_status = 'BORROWED' AND br.due_date < CURDATE() THEN 'OVERDUE'
+                             ELSE br.borrowing_status END AS display_status
+                 FROM borrowing br
+                 JOIN book b ON b.item_id = br.item_id
+                 WHERE br.user_id = :user_id
+                 ORDER BY br.borrow_date DESC, br.borrowing_id DESC"
+            );
+            $historyStatement->execute(['user_id' => $userId]);
+            $borrowHistory = $historyStatement->fetchAll();
         }
     }
 
@@ -251,6 +269,33 @@ class UserManagement
                 <?php endforeach; ?>
                 </tbody>
             </table>
+            <h2>Borrowing history</h2>
+            <?php if ($borrowHistory === []): ?>
+                <p>No borrowing history found for this user.</p>
+            <?php else: ?>
+                <table border="3" cellpadding="5" cellspacing="3" bordercolor="black">
+                    <thead>
+                        <tr>
+                            <th>Borrowing ID</th><th>Book ID</th><th>Title</th><th>Borrowed</th>
+                            <th>Due date</th><th>Returned</th><th>Days held</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($borrowHistory as $record): ?>
+                            <tr>
+                                <td><?= (int) $record['borrowing_id'] ?></td>
+                                <td><?= (int) $record['book_id'] ?></td>
+                                <td><?= $this->webUserEscape($record['title']) ?></td>
+                                <td><?= $this->webUserEscape($record['borrow_date']) ?></td>
+                                <td><?= $this->webUserEscape($record['due_date']) ?></td>
+                                <td><?= $this->webUserEscape($record['return_date'] ?? 'Not returned') ?></td>
+                                <td><?= (int) $record['days_held'] ?></td>
+                                <td><?= $this->webUserEscape($record['display_status']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
             <p><a href="?action=edit&amp;id=<?= (int) $selectedUser['user_id'] ?>">Edit user</a> |
                 <a href="user.php">Back to users</a></p>
         <?php endif; ?>

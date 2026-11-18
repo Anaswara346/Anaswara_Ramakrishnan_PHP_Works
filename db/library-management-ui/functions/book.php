@@ -252,6 +252,34 @@ class BookManagement
                 $_SESSION['web_book_flash'] = $action === 'add'
                     ? 'Book added successfully.'
                     : 'Book updated successfully.';
+            } elseif ($action === 'delete_copy') {
+                $bookId = $this->webBookPostId('book_id');
+                $pdo->beginTransaction();
+                $copyLock = $pdo->prepare(
+                    'SELECT copy_id, copy_status FROM book_copy WHERE copy_id = :id FOR UPDATE'
+                );
+                $copyLock->execute(['id' => $bookId]);
+                $copy = $copyLock->fetch();
+                if (!$copy) {
+                    throw new RuntimeException('Book ID not found.');
+                }
+                $history = $pdo->prepare('SELECT COUNT(*) FROM borrowing WHERE copy_id = :id');
+                $history->execute(['id' => $bookId]);
+                if ((int) $history->fetchColumn() > 0) {
+                    throw new RuntimeException(
+                        'This Book ID has borrowing history and cannot be deleted. Its history is retained.'
+                    );
+                }
+                if ($copy['copy_status'] === 'BORROWED') {
+                    throw new RuntimeException('A borrowed Book ID cannot be deleted.');
+                }
+                $deleteCopy = $pdo->prepare('DELETE FROM book_copy WHERE copy_id = :id');
+                $deleteCopy->execute(['id' => $bookId]);
+                if ($deleteCopy->rowCount() !== 1) {
+                    throw new RuntimeException('The Book ID could not be deleted.');
+                }
+                $pdo->commit();
+                $_SESSION['web_book_flash'] = 'Book ID ' . $bookId . ' deleted successfully.';
             } elseif ($action === 'delete') {
                 $itemId = $this->webBookPostId('item_id');
                 $pdo->beginTransaction();
@@ -287,7 +315,9 @@ class BookManagement
                 $pdo->rollBack();
             }
             if ($exception->getCode() === '23000') {
-                $_SESSION['web_book_error'] = 'Could not save this book. Its ISBN may already be in use.';
+                $_SESSION['web_book_error'] = $this->webBookPostValue('action') === 'delete_copy'
+                    ? 'This Book ID is still referenced by another record and cannot be deleted.'
+                    : 'Could not save this book. Its ISBN may already be in use.';
             } else {
                 throw $exception;
             }
@@ -299,7 +329,7 @@ class BookManagement
     $action = isset($_GET['action']) && is_string($_GET['action']) ? $_GET['action'] : '';
     $selectedBook = null;
     $selectedAuthorIds = [];
-    if (in_array($action, ['view', 'edit'], true)) {
+    if (in_array($action, ['view', 'edit', 'history'], true)) {
         $itemId = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1],
         ]);
@@ -328,27 +358,91 @@ class BookManagement
             http_response_code(404);
             exit('Book not found.');
         }
-        $authorStatement = $pdo->prepare('SELECT author_id FROM book_author WHERE item_id = :id');
-        $authorStatement->execute(['id' => $itemId]);
-        $selectedAuthorIds = array_map('intval', $authorStatement->fetchAll(PDO::FETCH_COLUMN));
+        if ($action === 'edit') {
+            $authorStatement = $pdo->prepare('SELECT author_id FROM book_author WHERE item_id = :id');
+            $authorStatement->execute(['id' => $itemId]);
+            $selectedAuthorIds = array_map('intval', $authorStatement->fetchAll(PDO::FETCH_COLUMN));
+        }
+    }
+
+    $selectedCopy = null;
+    $copyHistory = [];
+    if ($action === 'view' && isset($_GET['book_id'])) {
+        $copyId = filter_var($_GET['book_id'], FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+        if ($copyId === false) {
+            http_response_code(400);
+            exit('Please provide a valid Book ID.');
+        }
+        $copyStatement = $pdo->prepare(
+            'SELECT copy_id, copy_status FROM book_copy WHERE copy_id = :copy_id AND item_id = :item_id'
+        );
+        $copyStatement->execute(['copy_id' => $copyId, 'item_id' => $itemId]);
+        $selectedCopy = $copyStatement->fetch();
+        if (!$selectedCopy) {
+            http_response_code(404);
+            exit('Book ID not found for this title.');
+        }
+        $selectedBook['book_id'] = $selectedCopy['copy_id'];
+    } elseif ($action === 'history') {
+        $copyId = filter_var($_GET['book_id'] ?? null, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+        if ($copyId === false) {
+            http_response_code(400);
+            exit('Please provide a valid Book ID.');
+        }
+        $copyStatement = $pdo->prepare(
+            'SELECT copy_id, copy_status FROM book_copy WHERE copy_id = :copy_id AND item_id = :item_id'
+        );
+        $copyStatement->execute(['copy_id' => $copyId, 'item_id' => $itemId]);
+        $selectedCopy = $copyStatement->fetch();
+        if (!$selectedCopy) {
+            http_response_code(404);
+            exit('Book ID not found for this title.');
+        }
+        $historyStatement = $pdo->prepare(
+            "SELECT br.borrowing_id, u.user_name, u.email, br.borrow_date, br.due_date,
+                    br.return_date,
+                    CASE WHEN br.borrowing_status = 'LOST' THEN 'LOST'
+                         WHEN br.return_date IS NOT NULL THEN 'RETURNED'
+                         WHEN br.borrowing_status = 'BORROWED' AND br.due_date < CURDATE() THEN 'OVERDUE'
+                         ELSE br.borrowing_status END AS display_status
+             FROM borrowing br
+             JOIN library_user u ON u.user_id = br.user_id
+             WHERE br.item_id = :item_id AND br.copy_id = :copy_id
+             ORDER BY br.borrow_date DESC, br.borrowing_id DESC"
+        );
+        $historyStatement->execute(['item_id' => $itemId, 'copy_id' => $copyId]);
+        $copyHistory = $historyStatement->fetchAll();
+    }
+    if ($action === 'view' && $selectedCopy === null) {
+        $selectedBook['book_id'] = 'No physical copy';
     }
 
     $search = isset($_GET['search']) && is_string($_GET['search']) ? trim($_GET['search']) : '';
-    $sql = "SELECT b.item_id, b.title, b.publication_year, b.isbn, b.physical_format,
-                   b.price, g.genre_name,
-                   (SELECT COUNT(*) FROM book_copy c WHERE c.item_id = b.item_id) AS total_copies,
-                   (SELECT COUNT(*) FROM book_copy c WHERE c.item_id = b.item_id
-                       AND c.copy_status = 'AVAILABLE') AS available_copies,
+    $sql = "SELECT b.item_id, bc.copy_id, bc.date_added, bc.copy_status,
+                   b.title, b.publication_year, b.isbn, b.physical_format,
+                   b.price, g.genre_name, active.due_date, u.user_name,
+                   CASE WHEN bc.copy_status = 'BORROWED' AND active.due_date < CURDATE()
+                        THEN 'OVERDUE' ELSE bc.copy_status END AS display_status,
                    GROUP_CONCAT(DISTINCT a.author_name ORDER BY a.author_name SEPARATOR ', ') AS authors
             FROM book b
             LEFT JOIN genre g ON g.genre_id = b.genre_id
             LEFT JOIN book_author ba ON ba.item_id = b.item_id
-            LEFT JOIN author a ON a.author_id = ba.author_id";
+            LEFT JOIN author a ON a.author_id = ba.author_id
+            LEFT JOIN book_copy bc ON bc.item_id = b.item_id
+            LEFT JOIN borrowing active ON active.copy_id = bc.copy_id
+                AND active.borrowing_status = 'BORROWED' AND active.return_date IS NULL
+            LEFT JOIN library_user u ON u.user_id = active.user_id";
     if ($search !== '') {
         $sql .= ' WHERE b.title LIKE :title OR b.isbn LIKE :isbn OR b.physical_format LIKE :format';
     }
-    $sql .= ' GROUP BY b.item_id, b.title, b.publication_year, b.isbn, b.physical_format,
-                       b.price, g.genre_name ORDER BY b.item_id';
+    $sql .= ' GROUP BY b.item_id, bc.copy_id, bc.date_added, bc.copy_status,
+                       b.title, b.publication_year, b.isbn, b.physical_format,
+                       b.price, g.genre_name, active.due_date, u.user_name
+              ORDER BY b.item_id, bc.copy_id';
     $statement = $pdo->prepare($sql);
     if ($search !== '') {
         $term = '%' . $search . '%';
@@ -370,6 +464,10 @@ class BookManagement
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Book Management</title>
+        <style>
+            .actions { display: flex; flex-wrap: wrap; gap: 4px; }
+            .actions form { margin: 0; }
+        </style>
     </head>
     <body>
         <h1>Book Management</h1>
@@ -382,17 +480,51 @@ class BookManagement
             <h2>Book details</h2>
             <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><tbody>
                 <?php foreach ([
-                    'Book ID' => 'item_id', 'Title' => 'title', 'Authors' => 'authors',
+                    'Book ID' => 'book_id',
+                    'Title' => 'title', 'Authors' => 'authors',
                     'Genre' => 'genre_name', 'Publication year' => 'publication_year',
                     'ISBN' => 'isbn', 'Format' => 'physical_format', 'Description' => 'description',
-                    'Price' => 'price', 'Total copies' => 'total_copies',
-                    'Available copies' => 'available_copies',
+                    'Price' => 'price',
                 ] as $label => $key): ?>
                     <tr><th><?= $this->webBookEscape($label) ?></th><td><?= $this->webBookEscape($selectedBook[$key] ?? 'Not provided') ?></td></tr>
                 <?php endforeach; ?>
             </tbody></table>
             <p><a href="?action=edit&amp;id=<?= (int) $selectedBook['item_id'] ?>">Edit book</a></p>
+            <!-- <form method="post" onsubmit="return confirm('Delete this title and all its copies?')">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="item_id" value="<?= (int) $selectedBook['item_id'] ?>">
+                <?= $tokenField ?>
+                <button type="submit">Delete title and all copies</button>
+            </form> -->
             <p><a href="book.php">Back to Book Management</a></p>
+        <?php endif; ?>
+
+        <?php if ($action === 'history' && $selectedBook && $selectedCopy): ?>
+            <h2>Borrowing history</h2>
+            <p><strong>Book:</strong> <?= $this->webBookEscape($selectedBook['title']) ?></p>
+            <p><strong>Book ID:</strong> <?= (int) $selectedCopy['copy_id'] ?> |
+                <strong>Current status:</strong> <?= $this->webBookEscape($selectedCopy['copy_status']) ?></p>
+            <p><a href="book.php">Back to Book Management</a></p>
+            <?php if ($copyHistory === []): ?>
+                <p>No borrowing history found for this Book ID.</p>
+            <?php else: ?>
+                <table border="3" cellpadding="5" cellspacing="3" bordercolor="black">
+                    <thead><tr><th>Borrowing ID</th><th>Borrower</th><th>Email</th><th>Borrowed</th><th>Due date</th><th>Returned</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <?php foreach ($copyHistory as $record): ?>
+                        <tr>
+                            <td><?= (int) $record['borrowing_id'] ?></td>
+                            <td><?= $this->webBookEscape($record['user_name']) ?></td>
+                            <td><?= $this->webBookEscape($record['email']) ?></td>
+                            <td><?= $this->webBookEscape($record['borrow_date']) ?></td>
+                            <td><?= $this->webBookEscape($record['due_date']) ?></td>
+                            <td><?= $this->webBookEscape($record['return_date'] ?? 'Not returned') ?></td>
+                            <td><?= $this->webBookEscape($record['display_status']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($action === 'edit' && $selectedBook): ?>
@@ -443,7 +575,7 @@ class BookManagement
             <p><a href="book.php">Back to Book Management</a></p>
         <?php endif; ?>
 
-        <?php if (!in_array($action, ['view', 'edit'], true)): ?>
+        <?php if (!in_array($action, ['view', 'edit', 'history'], true)): ?>
         <h2>Add a book</h2>
 
         <form method="post">
@@ -497,14 +629,14 @@ class BookManagement
         <?php else: ?>
             <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black">
                 <thead><tr>
-                    <th>ID</th><th>Title</th><th>Authors</th><th>Genre</th><th>Year</th>
-                    <th>ISBN</th><th>Format</th><th>Price</th><th>Copies</th>
-                    <th>Available</th><th width="180">Actions</th>
+                    <th>Book ID</th><th>Title</th><th>Authors</th><th>Genre</th><th>Year</th>
+                    <th>ISBN</th><th>Format</th><th>Price</th><th>Status</th>
+                    <th>Borrower</th><th>Due date</th><th>Date added</th><th width="180">Actions</th>
                 </tr></thead>
                 <tbody>
                 <?php foreach ($books as $book): ?>
                     <tr>
-                        <td><?= (int) $book['item_id'] ?></td>
+                        <td><?= $book['copy_id'] === null ? 'No copy' : (int) $book['copy_id'] ?></td>
                         <td><?= $this->webBookEscape($book['title']) ?></td>
                         <td><?= $this->webBookEscape($book['authors'] ?: 'Not assigned') ?></td>
                         <td><?= $this->webBookEscape($book['genre_name'] ?: 'Not assigned') ?></td>
@@ -512,17 +644,44 @@ class BookManagement
                         <td><?= $this->webBookEscape($book['isbn'] ?: 'Not provided') ?></td>
                         <td><?= $this->webBookEscape($book['physical_format']) ?></td>
                         <td><?= number_format((float) $book['price'], 2) ?></td>
-                        <td><?= (int) $book['total_copies'] ?></td>
-                        <td><?= (int) $book['available_copies'] ?></td>
-                        <td width="180">
-                            <a href="?action=view&amp;id=<?= (int) $book['item_id'] ?>">View</a>
-                            <a href="?action=edit&amp;id=<?= (int) $book['item_id'] ?>">Edit</a>
-                            <form method="post" onsubmit="return confirm('Delete this book?')">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="item_id" value="<?= (int) $book['item_id'] ?>">
-                                <?= $tokenField ?>
-                                <button type="submit">Delete</button>
+                        <td><?= $this->webBookEscape($book['display_status'] ?? 'NO COPIES') ?></td>
+                        <td><?= $this->webBookEscape($book['user_name'] ?? 'Not borrowed') ?></td>
+                        <td><?= $this->webBookEscape($book['due_date'] ?? 'N/A') ?></td>
+                        <td><?= $this->webBookEscape($book['date_added'] ?? 'N/A') ?></td>
+                        <td class="actions">
+                            <form method="get">
+                                <input type="hidden" name="action" value="view">
+                                <input type="hidden" name="id" value="<?= (int) $book['item_id'] ?>">
+                                <?php if ($book['copy_id'] !== null): ?>
+                                    <input type="hidden" name="book_id" value="<?= (int) $book['copy_id'] ?>">
+                                <?php endif; ?>
+                                <button type="submit">View</button>
                             </form>
+                            <form method="get">
+                                <input type="hidden" name="action" value="edit">
+                                <input type="hidden" name="id" value="<?= (int) $book['item_id'] ?>">
+                                <button type="submit">Edit</button>
+                            </form>
+                            <?php if ($book['copy_id'] !== null): ?>
+                                <form method="get">
+                                    <input type="hidden" name="action" value="history">
+                                    <input type="hidden" name="id" value="<?= (int) $book['item_id'] ?>">
+                                    <input type="hidden" name="book_id" value="<?= (int) $book['copy_id'] ?>">
+                                    <button type="submit">History</button>
+                                </form>
+                                <!-- <form method="post" onsubmit="return confirm('Delete Book ID <?= (int) $book['copy_id'] ?>?')">
+                                    <input type="hidden" name="action" value="delete_copy">
+                                    <input type="hidden" name="book_id" value="<?= (int) $book['copy_id'] ?>">
+                                    <?= $tokenField ?>
+                                    <button type="submit">Delete</button>
+                                </form> -->
+                                <form method="post">
+                                    <input type="hidden" name="action" value="delete_copy">
+                                    <input type="hidden" name="book_id" value="<?= (int) $book['copy_id'] ?>">
+                                    <?= $tokenField ?>
+                                    <button type="submit">Delete</button>
+                                </form>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

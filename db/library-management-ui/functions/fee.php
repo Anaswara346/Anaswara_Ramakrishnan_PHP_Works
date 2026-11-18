@@ -51,8 +51,13 @@ class FeeManagement
     $personSearch = isset($_GET['person']) && is_string($_GET['person'])
         ? trim($_GET['person'])
         : '';
+    $paymentStatus = $_GET['status'] ?? 'all';
+
+    if (!in_array($paymentStatus, ['all', 'paid', 'unpaid'], true)) {
+        $paymentStatus = 'all';
+    }
     $feeSql =
-        'SELECT f.fee_id, f.borrowing_id, u.user_name, u.email, b.title AS book_name, br.copy_id,
+        'SELECT f.fee_id, f.borrowing_id, u.user_name, u.email, b.title AS book_name, br.copy_id AS book_id,
                 br.due_date, br.return_date, c.late_fee_per_day,
                 CASE WHEN f.fee_type IN (\'LATE\', \'LOST\')
                      THEN GREATEST(DATEDIFF(
@@ -74,18 +79,35 @@ class FeeManagement
          JOIN user_category c ON c.category_id = u.category_id
          JOIN borrowing br ON br.borrowing_id = f.borrowing_id
          JOIN book b ON b.item_id = br.item_id'
-         . ($personSearch === '' ? '' : ' WHERE (u.user_name LIKE :name_search OR u.email LIKE :email_search)')
+        //  . ($personSearch === '' ? '' : ' WHERE (u.user_name LIKE :name_search OR u.email LIKE :email_search)')
+        . ' WHERE 1=1'
+        . ($personSearch === '' ? '' : ' AND (u.user_name LIKE :name_search OR u.email LIKE :email_search)')
+        . ($paymentStatus === 'all' ? '' : ' AND f.paid = :paid_status')
          . ' ORDER BY f.fee_date DESC, f.fee_id DESC';
     $feeQuery = $pdo->prepare($feeSql);
-    if ($personSearch !== '') {
-        $feeQuery->execute([
-            'name_search' => '%' . $personSearch . '%',
-            'email_search' => '%' . $personSearch . '%',
-        ]);
-    } else {
-        $feeQuery->execute();
-    }
-    $fees = $feeQuery->fetchAll();
+    // if ($personSearch !== '') {
+    //     $feeQuery->execute([
+    //         'name_search' => '%' . $personSearch . '%',
+    //         'email_search' => '%' . $personSearch . '%',
+    //     ]);
+    // } else {
+    //     $feeQuery->execute();
+    // }
+    // $fees = $feeQuery->fetchAll();
+    $params = [];
+
+        if ($personSearch !== '') {
+            $params['name_search'] = '%' . $personSearch . '%';
+            $params['email_search'] = '%' . $personSearch . '%';
+        }
+
+        if ($paymentStatus !== 'all') {
+            $params['paid_status'] = $paymentStatus === 'paid' ? 1 : 0;
+        }
+
+        $feeQuery->execute($params);
+
+        $fees = $feeQuery->fetchAll();
     $summarySql =
         'SELECT COALESCE(SUM(f.amount), 0) AS total_recorded,
                 COALESCE(SUM(CASE WHEN f.paid = 1 THEN f.amount ELSE 0 END), 0) AS total_collected,
@@ -162,20 +184,66 @@ class FeeManagement
                     <td><?= number_format((float) $summary['total_outstanding'], 2) ?></td></tr>
             </tbody>
         </table>
-        <h2>Fine records</h2>
+        <!-- <h2>Fine records</h2>
         <form method="get">
             <label for="person-search">Search by person name or email:</label>
             <input id="person-search" type="search" name="person" maxlength="100" value="<?= $this->webFeeEscape($personSearch) ?>">
             <button type="submit">Search</button>
             <br><br>
             <?php if ($personSearch !== ''): ?><a href="fee.php">Clear search</a><?php endif; ?>
-        </form>
+        </form> -->
+        <h2>Fine records</h2>
+
+<form method="get">
+
+    <label for="person-search">
+        Search by person name :
+    </label>
+
+    <input
+        id="person-search"
+        type="search"
+        name="person"
+        maxlength="100"
+        value="<?= $this->webFeeEscape($personSearch) ?>"
+    >
+
+    <br><br>
+
+    <label for="payment-status">
+        Payment Status:
+    </label>
+
+    <select name="status" id="payment-status">
+
+        <option value="all"
+            <?= $paymentStatus === 'all' ? 'selected' : '' ?>>
+            All
+        </option>
+
+        <option value="paid"
+            <?= $paymentStatus === 'paid' ? 'selected' : '' ?>>
+            Paid
+        </option>
+
+        <option value="unpaid"
+            <?= $paymentStatus === 'unpaid' ? 'selected' : '' ?>>
+            Unpaid
+        </option>
+
+    </select>
+
+    <button type="submit">Apply Filter</button>
+
+    <a href="fee.php">Reset</a>
+
+</form>
         <?php if ($personSearch !== ''): ?>
             <p><strong>Total amount to pay for this search : <?= number_format((float) $summary['total_outstanding'], 2) ?></strong></p>
         <?php endif; ?>
         <?php if ($fees === []): ?><p>No fee records found.</p><?php else: ?>
             <table class="fee-records" border="3" bordercolor="black">
-                <thead><tr><th>Fee ID</th><th>Borrowing ID</th><th>User</th><th>Book</th><th>Copy ID</th><th>Type</th>
+                <thead><tr><th>Fee ID</th><th>Borrowing ID</th><th>User</th><th>Book</th><th>Book ID</th><th>Type</th>
                     <th>Due date</th><th>Return date</th><th>Overdue days</th><th>Fine per day</th>
                     <th>Amount</th><th>Recorded</th><th>Status</th><th>Payment date</th><th>Action</th></tr></thead>
                 <tbody>
@@ -183,7 +251,7 @@ class FeeManagement
                         <?php $overdueDays = $fee['overdue_days'] === null ? null : (int) $fee['overdue_days']; ?>
                         <td><?= (int) $fee['fee_id'] ?></td><td><?= (int) $fee['borrowing_id'] ?></td>
                         <td><?= $this->webFeeEscape($fee['user_name']) ?></td>
-                        <td><?= $this->webFeeEscape($fee['book_name']) ?></td><td><?= (int) $fee['copy_id'] ?></td>
+                        <td><?= $this->webFeeEscape($fee['book_name']) ?></td><td><?= (int) $fee['book_id'] ?></td>
                         <td><?= $this->webFeeEscape($fee['fee_type']) ?></td>
                         <td><?= $this->webFeeEscape($fee['due_date']) ?></td>
                         <td><?= $this->webFeeEscape($fee['return_date'] ?? 'Not returned') ?></td>
@@ -192,7 +260,9 @@ class FeeManagement
                         <td><?= number_format((float) $fee['amount'], 2) ?></td>
                         <td><?= $this->webFeeEscape($fee['fee_date']) ?></td><td><?= $fee['paid'] ? 'Paid' : 'Unpaid' ?></td>
                         <td><?= $this->webFeeEscape($fee['payment_date'] ?? 'Not paid') ?></td><td>
-                            <?php if (!$fee['paid']): ?><form method="post" onsubmit="return confirm('Mark this fee as paid?')">
+                            <?php if (!$fee['paid']): ?>
+                                <!-- <form method="post" onsubmit="return confirm('Mark this fee as paid?')"> -->
+                                    <form method="post">
                                 <input type="hidden" name="fee_id" value="<?= (int) $fee['fee_id'] ?>"><?= $csrf ?>
                                 <?php if ($personSearch !== ''): ?><input type="hidden" name="person_search" value="<?= $this->webFeeEscape($personSearch) ?>"><?php endif; ?>
                                 <button type="submit">Mark paid</button></form><?php else: ?>Not applicable<?php endif; ?>

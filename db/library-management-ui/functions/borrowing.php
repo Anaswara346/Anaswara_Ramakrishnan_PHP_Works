@@ -40,7 +40,7 @@ class BorrowingManagement
             $action = $_POST['action'] ?? '';
             if ($action === 'borrow') {
                 $userId = $this->webBorrowPostId('user_id');
-                $itemId = $this->webBorrowPostId('item_id');
+                $bookId = $this->webBorrowPostId('book_id');
                 $pdo->beginTransaction();
                 $userQuery = $pdo->prepare(
                     'SELECT u.user_id, u.user_name, u.account_status, c.max_items, c.loan_days
@@ -55,11 +55,6 @@ class BorrowingManagement
                 if ($user['account_status'] !== 'ACTIVE') {
                     throw new RuntimeException('This user account is not active.');
                 }
-                $bookQuery = $pdo->prepare('SELECT item_id FROM book WHERE item_id = :id');
-                $bookQuery->execute(['id' => $itemId]);
-                if (!$bookQuery->fetchColumn()) {
-                    throw new RuntimeException('Book not found.');
-                }
                 $count = $pdo->prepare(
                     "SELECT COUNT(*) FROM borrowing
                      WHERE user_id = :id AND return_date IS NULL AND borrowing_status = 'BORROWED'"
@@ -68,21 +63,25 @@ class BorrowingManagement
                 if ((int) $count->fetchColumn() >= (int) $user['max_items']) {
                     throw new RuntimeException('The user has reached their borrowing limit.');
                 }
-                $copyQuery = $pdo->prepare(
-                    "SELECT copy_id FROM book_copy
-                     WHERE item_id = :id AND copy_status = 'AVAILABLE'
-                     ORDER BY copy_id LIMIT 1 FOR UPDATE"
+                $bookQuery = $pdo->prepare(
+                    "SELECT bc.copy_id, bc.item_id
+                     FROM book_copy bc
+                     JOIN book b ON b.item_id = bc.item_id
+                     WHERE bc.copy_id = :id AND bc.copy_status = 'AVAILABLE'
+                     FOR UPDATE"
                 );
-                $copyQuery->execute(['id' => $itemId]);
-                $copyId = $copyQuery->fetchColumn();
-                if ($copyId === false) {
-                    throw new RuntimeException('No available copies of this book.');
+                $bookQuery->execute(['id' => $bookId]);
+                $book = $bookQuery->fetch();
+                if (!$book) {
+                    throw new RuntimeException('This Book ID is unavailable or does not exist.');
                 }
+                $itemId = (int) $book['item_id'];
+                $copyId = (int) $book['copy_id'];
                 $copyUpdate = $pdo->prepare(
                     "UPDATE book_copy SET copy_status = 'BORROWED'
                      WHERE copy_id = :id AND copy_status = 'AVAILABLE'"
                 );
-                $copyUpdate->execute(['id' => (int) $copyId]);
+                $copyUpdate->execute(['id' => $copyId]);
                 if ($copyUpdate->rowCount() !== 1) {
                     throw new RuntimeException('Could not reserve an available copy.');
                 }
@@ -95,17 +94,17 @@ class BorrowingManagement
                 $insert->execute([
                     'user_id' => $userId,
                     'item_id' => $itemId,
-                    'copy_id' => (int) $copyId,
+                    'copy_id' => $copyId,
                     'borrow_date' => $borrowDate,
                     'due_date' => $dueDate,
                 ]);
                 $pdo->commit();
-                $_SESSION['web_borrow_flash'] = 'Book borrowed successfully. Copy ID: ' . $copyId . '; due date: ' . $dueDate . '.';
+                $_SESSION['web_borrow_flash'] = 'Book borrowed successfully. Book ID: ' . $copyId . '; due date: ' . $dueDate . '.';
             } elseif ($action === 'return') {
                 $borrowingId = $this->webBorrowPostId('borrowing_id');
                 $pdo->beginTransaction();
                 $query = $pdo->prepare(
-                    "SELECT br.borrowing_id, br.user_id, br.copy_id, br.due_date, br.return_date,
+                    "SELECT br.borrowing_id, br.user_id, br.copy_id AS book_id, br.due_date, br.return_date,
                             br.borrowing_status, u.user_name, b.title, c.late_fee_per_day
                      FROM borrowing br
                      JOIN library_user u ON u.user_id = br.user_id
@@ -135,7 +134,7 @@ class BorrowingManagement
                     "UPDATE book_copy SET copy_status = 'AVAILABLE'
                      WHERE copy_id = :id AND copy_status = 'BORROWED'"
                 );
-                $copy->execute(['id' => (int) $borrowing['copy_id']]);
+                $copy->execute(['id' => (int) $borrowing['book_id']]);
                 if ($copy->rowCount() !== 1) {
                     throw new RuntimeException('The returned copy could not be marked as available.');
                 }
@@ -157,7 +156,7 @@ class BorrowingManagement
                 $borrowingId = $this->webBorrowPostId('borrowing_id');
                 $pdo->beginTransaction();
                 $query = $pdo->prepare(
-                    "SELECT br.borrowing_id, br.user_id, br.copy_id, br.return_date,
+                    "SELECT br.borrowing_id, br.user_id, br.copy_id AS book_id, br.return_date,
                             br.borrowing_status, br.due_date, b.price, b.title, c.late_fee_per_day
                      FROM borrowing br JOIN book b ON b.item_id = br.item_id
                      JOIN library_user u ON u.user_id = br.user_id
@@ -197,7 +196,7 @@ class BorrowingManagement
                     "UPDATE book_copy SET copy_status = 'LOST'
                      WHERE copy_id = :id AND copy_status = 'BORROWED'"
                 );
-                $copyUpdate->execute(['id' => (int) $borrowing['copy_id']]);
+                $copyUpdate->execute(['id' => (int) $borrowing['book_id']]);
                 if ($statusUpdate->rowCount() !== 1 || $copyUpdate->rowCount() !== 1) {
                     throw new RuntimeException('Could not update the borrowing and copy status.');
                 }
@@ -227,7 +226,7 @@ class BorrowingManagement
                 $outstandingFees = (float) $borrowing['price']
                     + (float) $lateFees['unpaid_late_fees']
                     + $additionalLateFee;
-                $_SESSION['web_borrow_flash'] = 'Copy reported lost. Total unpaid fees: '
+                $_SESSION['web_borrow_flash'] = 'Book ID ' . (int) $borrowing['book_id'] . ' reported lost. Total unpaid fees: '
                     . number_format($outstandingFees, 2) . '.';
             } else {
                 throw new RuntimeException('Unknown borrowing action.');
@@ -248,9 +247,10 @@ class BorrowingManagement
         "SELECT user_id, user_name FROM library_user WHERE account_status = 'ACTIVE' ORDER BY user_name"
     )->fetchAll();
     $books = $pdo->query(
-        "SELECT b.item_id, b.title, COUNT(c.copy_id) AS available_copies
-         FROM book b JOIN book_copy c ON c.item_id = b.item_id AND c.copy_status = 'AVAILABLE'
-         GROUP BY b.item_id, b.title HAVING available_copies > 0 ORDER BY b.title"
+        "SELECT bc.copy_id AS book_id, b.title
+         FROM book_copy bc JOIN book b ON b.item_id = bc.item_id
+         WHERE bc.copy_status = 'AVAILABLE'
+         ORDER BY b.title, bc.copy_id"
     )->fetchAll();
     $view = isset($_GET['action']) && is_string($_GET['action']) && in_array($_GET['action'], ['overdue', 'current'], true)
         ? $_GET['action']
@@ -264,21 +264,41 @@ class BorrowingManagement
         $borrowingConditions[] = "br.return_date IS NULL AND br.borrowing_status = 'BORROWED'";
     }
     if ($recordSearch !== '') {
-        $searchCondition = '(u.user_name LIKE :name_search OR u.email LIKE :email_search OR b.title LIKE :book_search';
-        $searchTerm = '%' . $recordSearch . '%';
-        $borrowingParameters['name_search'] = $searchTerm;
-        $borrowingParameters['email_search'] = $searchTerm;
-        $borrowingParameters['book_search'] = $searchTerm;
-        if (ctype_digit($recordSearch) && (int) $recordSearch > 0) {
-            $searchCondition .= ' OR br.borrowing_id = :borrowing_id OR br.copy_id = :copy_id OR u.user_id = :user_id';
-            $borrowingParameters['borrowing_id'] = (int) $recordSearch;
-            $borrowingParameters['copy_id'] = (int) $recordSearch;
-            $borrowingParameters['user_id'] = (int) $recordSearch;
+
+            $searchTerm = '%' . $recordSearch . '%';
+
+            $searchCondition = '(
+                u.user_name LIKE :name_search
+                OR u.email LIKE :email_search
+                OR b.title LIKE :book_search
+            )';
+
+            $borrowingParameters['name_search'] = $searchTerm;
+            $borrowingParameters['email_search'] = $searchTerm;
+            $borrowingParameters['book_search'] = $searchTerm;
+
+            $borrowingConditions[] = $searchCondition;
         }
-        $borrowingConditions[] = $searchCondition . ')';
-    }
+        // Borrowing ID filter
+if (!empty($_GET['borrowing_id'])) {
+
+    $borrowingConditions[] = 'br.borrowing_id = :borrowing_id';
+
+    $borrowingParameters['borrowing_id'] =
+        (int) $_GET['borrowing_id'];
+}
+
+
+// Physical Book ID filter
+if (!empty($_GET['book_id'])) {
+
+    $borrowingConditions[] = 'br.copy_id = :book_id';
+
+    $borrowingParameters['book_id'] =
+        (int) $_GET['book_id'];
+}
     $borrowingSql =
-        "SELECT br.borrowing_id, br.copy_id, u.user_name, b.title, br.borrow_date, br.due_date,
+        "SELECT br.borrowing_id, br.copy_id AS book_id, u.user_name, b.title, br.borrow_date, br.due_date,
                 u.email,
                 DATEDIFF(COALESCE(br.return_date, CURDATE()), br.borrow_date) AS days_held,
         CASE WHEN br.return_date IS NULL AND br.borrowing_status = 'BORROWED'
@@ -314,7 +334,7 @@ class BorrowingManagement
         }
     }
     $overdue = $pdo->query(
-        "SELECT u.user_name, b.title, br.borrowing_id, br.copy_id, br.due_date,
+        "SELECT u.user_name, b.title, br.borrowing_id, br.copy_id AS book_id, br.due_date,
                 DATEDIFF(CURDATE(), br.due_date) AS overdue_days,
                 c.late_fee_per_day,
                 DATEDIFF(CURDATE(), br.due_date) * c.late_fee_per_day AS current_fine
@@ -355,18 +375,18 @@ class BorrowingManagement
             <label>User: <select name="user_id" required><option value="">Select a user</option>
                 <?php foreach ($users as $user): ?><option value="<?= (int) $user['user_id'] ?>"><?= $this->webBorrowEscape($user['user_name']) ?></option><?php endforeach; ?>
             </select></label>
-            <label>Book: <select name="item_id" required><option value="">Select a book</option>
-                <?php foreach ($books as $book): ?><option value="<?= (int) $book['item_id'] ?>"><?= $this->webBorrowEscape($book['title']) ?> (<?= (int) $book['available_copies'] ?> available)</option><?php endforeach; ?>
+            <label>Book ID: <select name="book_id" required><option value="">Select a book</option>
+                <?php foreach ($books as $book): ?><option value="<?= (int) $book['book_id'] ?>">Book ID <?= (int) $book['book_id'] ?> - <?= $this->webBorrowEscape($book['title']) ?></option><?php endforeach; ?>
             </select></label>
             <button type="submit">Borrow</button></form><?php endif; ?>
         <?php endif; ?>
         <?php if ($view === 'overdue'): ?>
             <!-- <h2>Estimated overdue charges (not yet returned)</h2> -->
             <?php if ($overdue === []): ?><p>No overdue books found.</p><?php else: ?>
-                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>Borrowing ID</th><th>User</th><th>Book</th><th>Copy</th><th>Due date</th><th>Overdue days</th><th>Charge per day</th><th>Estimated charge</th></tr></thead><tbody>
+                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>Borrowing ID</th><th>User</th><th>Book</th><th>Book ID</th><th>Due date</th><th>Overdue days</th><th>Charge per day</th><th>Estimated charge</th></tr></thead><tbody>
                 <?php foreach ($overdue as $record): ?><tr>
                     <td><?= (int) $record['borrowing_id'] ?></td><td><?= $this->webBorrowEscape($record['user_name']) ?></td>
-                    <td><?= $this->webBorrowEscape($record['title']) ?></td><td><?= (int) $record['copy_id'] ?></td>
+                    <td><?= $this->webBorrowEscape($record['title']) ?></td><td><?= (int) $record['book_id'] ?></td>
                     <td><?= $this->webBorrowEscape($record['due_date']) ?></td><td><?= (int) $record['overdue_days'] ?></td>
                     <td><?= number_format((float) $record['late_fee_per_day'], 2) ?></td>
                     <td><?= number_format((float) $record['current_fine'], 2) ?></td>
@@ -375,14 +395,62 @@ class BorrowingManagement
         <?php else: ?>
             <h2><?= $view === 'current' ? 'Currently Borrowed Books' : 'Borrowing records' ?></h2>
             
-            <form method="get">
+            <!-- <form method="get">
                 <?php if ($view === 'current'): ?><input type="hidden" name="action" value="current"><?php endif; ?>
                 <label for="record-search">Search by name, email, or book title:</label>
                 <input id="record-search" type="search" name="search" maxlength="100" value="<?= $this->webBorrowEscape($recordSearch) ?>">
                 <button type="submit">Search</button>
     
                 <?php if ($recordSearch !== ''): ?><a href="<?= $view === 'current' ? 'borrowing.php?action=current' : 'borrowing.php' ?>">Clear search</a><?php endif; ?>
-            </form>
+            </form> -->
+        <form method="get">
+
+            <?php if ($view === 'current'): ?>
+                <input type="hidden" name="action" value="current">
+            <?php endif; ?>
+
+            <!-- General Search -->
+            <label for="record-search">
+                Search by name, email, or book title:
+            </label>
+
+            <input
+                id="record-search"
+                type="search"
+                name="search"
+                maxlength="100"
+                value="<?= $this->webBorrowEscape($recordSearch) ?>"
+            >
+
+            <!-- Borrowing ID -->
+            <label for="borrowing-id">Borrowing ID:</label>
+
+            <input
+                id="borrowing-id"
+                type="number"
+                name="borrowing_id"
+                min="1"
+                value="<?= htmlspecialchars($_GET['borrowing_id'] ?? '') ?>"
+            >
+
+            <!-- Book ID -->
+            <label for="book-id">Book ID:</label>
+
+            <input
+                id="book-id"
+                type="number"
+                name="book_id"
+                min="1"
+                value="<?= htmlspecialchars($_GET['book_id'] ?? '') ?>"
+            >
+
+            <button type="submit">Search</button>
+
+            <a href="<?= $view === 'current' ? 'borrowing.php?action=current' : 'borrowing.php' ?>">
+                Clear Filters
+            </a>
+
+        </form>
             <br> <br>
             <?php if ($recordSearch !== ''): ?>
                 <p>Search results for &quot;<?= $this->webBorrowEscape($recordSearch) ?>&quot;:
@@ -396,9 +464,9 @@ class BorrowingManagement
             <?php if ($borrowings === []): ?><p><?= $recordSearch !== ''
                 ? 'No matching borrowing records found.'
                 : ($view === 'current' ? 'No books are currently borrowed.' : 'No borrowing records found.') ?></p><?php else: ?>
-                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>ID</th><th>Copy Id</th><th>User</th><th>Email</th><th>Book</th><th>Borrow Date</th><th>Due Date</th><th>Return Date</th><th>Days held</th><?php if ($view === 'current'): ?><th>Overdue days</th><?php endif; ?><th>Status</th><?php if ($view !== 'current'): ?><th>Unpaid fees</th><th>Paid fees</th><?php endif; ?><th width="180">Actions</th></tr></thead><tbody>
+                <table border="3" cellpadding="5" cellspacing="3" bordercolor = "black"><thead><tr><th>Borrowing ID</th><th>Book ID</th><th>User</th><th>Email</th><th>Book</th><th>Borrow Date</th><th>Due Date</th><th>Return Date</th><th>Days held</th><?php if ($view === 'current'): ?><th>Overdue days</th><?php endif; ?><th>Status</th><?php if ($view !== 'current'): ?><th>Unpaid fees</th><th>Paid fees</th><?php endif; ?><th width="180">Actions</th></tr></thead><tbody>
                 <?php foreach ($borrowings as $record): ?><tr>
-                    <td><?= (int) $record['borrowing_id'] ?></td><td><?= (int) $record['copy_id'] ?></td>
+                    <td><?= (int) $record['borrowing_id'] ?></td><td><?= (int) $record['book_id'] ?></td>
                     <td><?= $this->webBorrowEscape($record['user_name']) ?></td><td><?= $this->webBorrowEscape($record['email']) ?></td>
                     <td><?= $this->webBorrowEscape($record['title']) ?></td>
                     <td><?= $this->webBorrowEscape($record['borrow_date']) ?></td>
@@ -418,7 +486,7 @@ class BorrowingManagement
                         <form method="post" onsubmit="return confirm('Record this book as returned?')">
                             <input type="hidden" name="action" value="return"><input type="hidden" name="borrowing_id" value="<?= (int) $record['borrowing_id'] ?>"><?= $csrf ?><button type="submit">Return</button>
                         </form>
-                        <form method="post" onsubmit="return confirm('Report this copy as lost and create a fee?')">
+                        <form method="post" onsubmit="return confirm('Report this book as lost and create a fee?')">
                             <input type="hidden" name="action" value="lost"><input type="hidden" name="borrowing_id" value="<?= (int) $record['borrowing_id'] ?>"><?= $csrf ?><button type="submit">Report lost</button>
                         </form>
                     <?php else: ?>Not applicable<?php endif; ?></td>
