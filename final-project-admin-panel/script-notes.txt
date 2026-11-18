@@ -1,0 +1,85 @@
+forEach() – Display each user
+------------------------------------------------------------------------------------
+    users.forEach(user => {
+    console.log(user.name);
+});
+
+map() – Get only user names
+----------------------------------------------------------------------------------
+const names = users.map(user => user.name);
+
+filter() – Find users above age 22
+------------------------------------------------------------------------------------------------
+const result = users.filter(user => user.age > 22);
+
+find() – Find a particular user
+----------------------------------------------------------------------------------
+const user = users.find(user => user.id === 2);
+
+======================================
+Object methods
+======================================
+JavaScript objects are important because your user records, course records, and other database-like data are stored as objects.
+Method	            Purpose
+========================================
+Object.keys()	    Returns object property names
+Object.values()	    Returns object values
+Object.entries()	Returns key-value pairs
+Object.assign()	    Copies properties between objects
+Object.hasOwn()	    Checks whether an object has a property
+
+
+4. DOM manipulation methods
+DOM stands for Document Object Model. It allows JavaScript to access and modify HTML elements.
+=======================================================================
+Method / Property	                        Purpose
+========================================================================
+getElementById()	                Selects an element by ID
+querySelector()	                    Selects the first matching element
+querySelectorAll()	                Selects all matching elements
+createElement()	                    Creates an HTML element
+appendChild()	                    Adds an element inside another
+remove()	                        Removes an element
+setAttribute()	                    Sets an HTML attribute
+getAttribute()	                    Gets an HTML attribute
+classList.add()	                    Adds a CSS class
+classList.remove()	                Removes a CSS class
+classList.toggle()	                Adds/removes a CSS class
+textContent	                        Gets or changes text
+innerHTML	                        Gets or changes HTML
+value	                            Gets or changes input values
+
+
+8. JSON and localStorage
+=====================================================
+Since your current admin panel uses localStorage to save users, these are particularly important.
+
+
+Method	                                Purpose
+------------------------------------------------------------------------------
+JSON.stringify()	                Converts JavaScript data into JSON text
+JSON.parse()	                    Converts JSON text into JavaScript data
+localStorage.setItem()	            Saves data
+localStorage.getItem()	            Retrieves data
+localStorage.removeItem()	        Removes a particular key
+localStorage.clear()	            Clears all keys for the current origin
+
+
+Variables	                    let, const, var
+Functions	                    Normal functions and arrow functions
+Parameters	                    Passing values into functions
+Return	                        Returning values from functions
+Conditions	                    if, else, switch
+Loops	                        for, while, for...of, for...in
+Arrays	                        Creating and accessing arrays
+Objects	                        Properties and methods
+Spread operator	                ...array, ...object
+Destructuring	                Extracting array/object values
+Template literals	            Using backticks and ${}
+Callbacks	                    Passing functions into other functions
+Scope	                        Local and global variables
+Closures	                    Functions accessing outer variables
+Promises	                    Handling asynchronous operations
+Async/Await	                    Working with asynchronous code
+Try/Catch	                    Handling errors
+Modules	                        import and export

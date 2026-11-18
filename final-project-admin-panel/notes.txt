@@ -1,0 +1,35 @@
+Class	                Purpose
+==========================================
+flex	                Places sidebar and content horizontally
+min-h-screen	        Minimum height of the screen
+w-64	                Sidebar width
+bg-gray-900	            Dark sidebar background
+flex-1	                Main content occupies remaining space
+p-6	                    Adds padding
+rounded-lg	            Rounded corners
+shadow-sm	            Small shadow
+hover:bg-gray-700	    Changes background on hover
+
+Class                     Purpose
+==============================================
+justify-between	        Places content at opposite ends
+items-center	        Vertically aligns content
+p-3	                    Adds padding
+bg-blue-100	            Light blue background
+hover:border-blue-600	Changes border on hover
+hover:shadow-md	        Adds shadow on hover
+transition-all	        Smoothly animates changes
+duration-300	        Transition takes 300ms
+
+
+Class	                Explanation
+=========================================================
+fixed	                Positions sidebar relative to viewport
+lg:static	            Returns to normal layout on large screens
+-translate-x-full	    Moves sidebar completely to the left
+lg:translate-x-0	    Shows sidebar on large screens
+transform	            Enables transform utilities
+transition-transform	Smooth sidebar movement
+duration-300	        Animation duration of 300ms
+lg:hidden	            Hides button on large screens
+z-50	                Places sidebar above other content

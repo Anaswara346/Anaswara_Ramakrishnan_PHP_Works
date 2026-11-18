@@ -1,0 +1,638 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>User Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+<!-- Sidebar -->
+    <aside
+        id="userSidebar"
+        class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200
+            flex flex-col z-50
+            -translate-x-full md:translate-x-0
+            transition-transform duration-300 ease-in-out">
+            <!-- <aside class="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col z-20"> -->
+
+        <!-- Logo -->
+        <div class="flex items-center gap-5 px-6 py-6 border-b border-gray-200">
+
+            <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-user text-lg"></i>
+            </div>
+
+            <h1 class="text-xl font-bold text-gray-800">
+                User Portal
+            </h1>
+
+        </div>
+
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-2">
+
+            <a href="#dashboardSection"
+                class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium">
+
+                <i class="fa-solid fa-house w-5"></i>
+                Dashboard
+
+            </a>
+
+
+            <a href="#profileSection"
+                class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+
+                <i class="fa-solid fa-user w-5"></i>
+                My Profile
+
+            </a>
+
+
+            <a href="#"
+                id="changePasswordNav"
+                class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+
+                <i class="fa-solid fa-lock w-5"></i>
+                Change Password
+
+            </a>
+
+        </nav>
+
+
+        <!-- User Information and Logout -->
+        <div class="border-t border-gray-200 p-4">
+
+            <div class="flex items-center gap-3 mb-4 px-2">
+
+                <div class="w-10 h-10 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center ">
+                    <i class="fa-solid fa-user text-2xl"></i>
+                </div>
+
+                <div class="min-w-0">
+
+                    <p id="navUserName" class="font-semibold text-gray-800 truncate">
+                        User
+                    </p>
+
+                    <p class="text-xs text-gray-500">
+                        Regular User
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="logoutBtn"
+                class="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition">
+
+                <i class="fa-solid fa-right-from-bracket w-5"></i>
+
+                Logout
+
+            </button>
+
+        </div>
+
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+        <div
+            id="mobileSidebarOverlay"
+            class="hidden fixed inset-0 bg-black/40 z-40 md:hidden"
+        ></div>
+
+    <!-- Main Content -->
+    <main class="ml-0 md:ml-64 px-8 py-8">
+
+        <!-- Mobile Header -->
+    <div class="md:hidden flex items-center justify-between bg-white border-b border-gray-200 rounded-xl px-4 py-4 sticky top-0 z-40">
+
+        <h2 class="text-lg font-bold text-gray-800">
+            User Portal
+        </h2>
+
+        <button
+            type="button"
+            id="mobileMenuBtn"
+            class="text-gray-700 text-xl p-2 hover:bg-gray-100 rounded-lg"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+        >
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+    </div>
+        <!-- Dashboard Section -->
+        <section id="dashboardSection">
+
+
+            <!-- Welcome Section -->
+            <div class="mb-8">
+
+                <h2 class="text-2xl font-bold text-gray-800 mt-10">
+
+                    Welcome, <span id="welcomeUserName">User</span>!
+
+                </h2>
+
+                <p class="text-gray-500 mt-2">
+                    Here's an overview of your account.
+                </p>
+
+            </div>
+
+
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
+
+                <!-- Account Status -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+                    <div class="flex items-center justify-between">
+
+                        <div>
+
+                            <p class="text-sm text-gray-500">
+                                Account Status
+                            </p>
+
+                            <h3 id="userAccountStatus" class="text-2xl font-bold text-green-600 mt-2">
+                                Active
+                            </h3>
+
+                        </div>
+
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Account Role -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+                    <div class="flex items-center justify-between">
+
+                        <div>
+
+                            <p class="text-sm text-gray-500">
+                                Account Role
+                            </p>
+
+                            <h3 id="userAccountRole" class="text-2xl font-bold text-blue-600 mt-2">
+                                User
+                            </h3>
+
+                        </div>
+
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+
+                            <i class="fa-solid fa-user-tag text-xl"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Account ID -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+                    <div class="flex items-center justify-between">
+
+                        <div>
+
+                            <p class="text-sm text-gray-500">
+                                Account ID
+                            </p>
+
+                            <h3 id="userAccountId" class="text-2xl font-bold text-gray-800 mt-2">
+                                -
+                            </h3>
+
+                        </div>
+
+                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+
+                            <i class="fa-solid fa-id-card text-xl"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- Account Overview -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+
+                <h3 class="text-lg font-bold text-gray-800 mb-2">
+                    Account Overview
+                </h3>
+
+                <p class="text-sm text-gray-500">
+                    Manage your personal information and account settings from the sidebar.
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- Profile Section -->
+        <section id="profileSection" class="mt-10">
+
+
+            <!-- Profile Heading -->
+            <div class="flex items-center justify-between mb-6">
+
+                <div>
+
+                    <h3 class="text-2xl font-bold text-gray-800">
+                        My Profile
+                    </h3>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        View and manage your personal information.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="editUserProfileBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+
+                    <i class="fa-solid fa-pen-to-square mr-1"></i>
+
+                    Edit Profile
+
+                </button>
+
+            </div>
+
+
+
+            <!-- Profile Information -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+
+                <div class="flex items-center gap-4 mb-6">
+
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+
+                        <i class="fa-solid fa-user text-2xl"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h4 id="profileDisplayName" class="text-lg font-bold text-gray-800">
+                            User
+                        </h4>
+
+                        <p class="text-sm text-gray-500">
+                            Regular User Account
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+
+                    <!-- Full Name -->
+                    <div>
+
+                        <p class="text-sm text-gray-500 mb-1">
+                            Full Name
+                        </p>
+
+                        <p id="profileName" class="font-semibold text-gray-800">
+                            -
+                        </p>
+
+                    </div>
+
+
+                    <!-- Email -->
+                    <div>
+
+                        <p class="text-sm text-gray-500 mb-1">
+                            Email Address
+                        </p>
+
+                        <p id="profileEmail" class="font-semibold text-gray-800">
+                            -
+                        </p>
+
+                    </div>
+
+
+                    <!-- Role -->
+                    <div>
+
+                        <p class="text-sm text-gray-500 mb-1">
+                            Account Role
+                        </p>
+
+                        <p id="profileRole" class="font-semibold text-gray-800">
+                            -
+                        </p>
+
+                    </div>
+                    <!-- Status -->
+                    <div>
+
+                        <p class="text-sm text-gray-500 mb-1">
+                            Account Status
+                        </p>
+
+                        <p id="profileStatus" class="font-semibold text-green-600">
+                            -
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Edit Profile Modal -->
+        <div id="editUserProfileModal"
+            class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+
+            <div class="bg-white w-full max-w-md rounded-xl shadow-xl">
+
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">
+                            Edit Profile
+                        </h3>
+
+                        <p class="text-sm text-gray-500 mt-1">
+                            Update your personal information.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="closeUserProfileModal"
+                        class="text-gray-400 hover:text-gray-700 text-xl">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+                </div>
+
+
+                <!-- Modal Body -->
+                <form id="editUserProfileForm" class="p-6">
+
+                    <!-- Name -->
+                    <div class="mb-5">
+
+                        <label for="editUserName"
+                            class="block text-sm font-medium text-gray-700 mb-2">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editUserName"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your full name">
+
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-5">
+
+                        <label for="editUserEmail"
+                            class="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="editUserEmail"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your email address">
+
+                    </div>
+
+
+                    <!-- Error Message -->
+                    <p id="userProfileError"
+                        class="hidden text-sm text-red-600 mb-4">
+                    </p>
+
+                    <!-- Buttons -->
+                    <div class="flex justify-end gap-3">
+
+                        <button
+                            type="button"
+                            id="cancelUserProfileEdit"
+                            class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition">
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div id="changePasswordModal"
+            class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+
+            <div class="bg-white w-full max-w-md rounded-xl shadow-xl">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">
+                            Change Password
+                        </h3>
+
+                        <p class="text-sm text-gray-500 mt-1">
+                            Update your account password.
+                        </p>
+                    </div>
+
+                    <button type="button"
+                        id="closeChangePasswordModal"
+                        class="text-gray-400 hover:text-gray-700 text-xl">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+                </div>
+
+
+                <!-- Form -->
+                <form id="changePasswordForm" class="p-6">
+
+                    <!-- Current Password -->
+                    <div class="mb-5">
+
+                        <label for="currentPassword"
+                            class="block text-sm font-medium text-gray-700 mb-2">
+                            Current Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="currentPassword"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter current password">
+
+                    </div>
+
+
+                    <!-- New Password -->
+                    <div class="mb-5">
+
+                        <label for="newPassword"
+                            class="block text-sm font-medium text-gray-700 mb-2">
+                            New Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="newPassword"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter new password">
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            Password must contain 6 to 12 characters.
+                        </p>
+
+                    </div>
+
+
+                    <!-- Confirm Password -->
+                    <div class="mb-5">
+
+                        <label for="confirmNewPassword"
+                            class="block text-sm font-medium text-gray-700 mb-2">
+                            Confirm New Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="confirmNewPassword"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Confirm new password">
+
+                    </div>
+
+
+                    <!-- Error Message -->
+                    <p id="changePasswordError"
+                        class="hidden text-sm text-red-600 mb-4">
+                    </p>
+
+
+                    <!-- Buttons -->
+                    <div class="flex justify-end gap-3">
+
+                        <button type="button"
+                            id="cancelChangePassword"
+                            class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                            class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Update Password
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <!-- Success Notification -->
+        <div id="userProfileSuccessToast"
+            class="hidden fixed top-5 right-5 z-[60] bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg flex items-center gap-3">
+
+            <i class="fa-solid fa-circle-check"></i>
+
+            <span>Profile updated successfully!</span>
+
+        </div>
+        <div id="passwordSuccessToast"
+            class="hidden fixed top-5 right-5 z-[60] bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg items-center gap-3">
+
+            <i class="fa-solid fa-circle-check"></i>
+
+            <span>Password changed successfully!</span>
+
+        </div>
+
+
+    </main>
+
+    <script src="auth.js"></script>
+
+    <script>
+
+        if (!checkPageAccess("User")) {
+            document.body.style.display = "none";
+        }
+
+    </script>
+
+
+</body>
+
+</html>

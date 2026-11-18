@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="en" class="overscroll-none">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add User</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body class="bg-gray-100">
+
+    <div class="flex min-h-screen">
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed lg:static top-0 left-0 z-50 bg-gray-800 
+                        text-white min-h-screen transition -translate-x-full lg:translate-x-0 
+                        transition-transform duration-300 w-64 ">
+            <div class=" p-6 flex items-center justify-between">
+                <h1 class="text-2xl text-white font-semibold">
+                    Admin Panel
+                </h1>
+                <button id="closeSidebar"
+                    class="lg:hidden text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <nav class="space-y-2 mt-6 px-3">
+
+                <a href="dashboard.html"
+                    class="block px-4 py-3 text-white hover:bg-gray-600 rounded-lg transition">
+                    <i class="fa-solid fa-house w-5"></i>
+                    Dashboard
+                </a>
+
+                <a href="users.html"
+                    class="block px-4 py-3 text-white hover:bg-gray-600 rounded-lg transition">
+                    <i class="fa-solid fa-users w-5"></i>
+                    Users
+                </a>
+
+                <a href="adduser.html"
+                    class="block px-4 py-3 bg-blue-600 rounded-lg">
+                    <i class="fa-solid fa-user-plus w-5"></i>
+                    Add User
+                </a>
+                <a href="profile.html"
+                    class="block px-4 py-3 text-white hover:bg-gray-600 rounded-lg transition">
+                    <i class="fa-solid fa-user-circle w-5"></i>
+                    My Profile
+                </a>
+                <a href="#" id="logoutBtn"
+                    class="block px-4 py-3 text-white hover:bg-red-600 rounded-lg transition">
+                    <i class="fa-solid fa-right-from-bracket w-5"></i>
+                    Logout
+                </a>
+            </nav>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+
+            <!-- Page Header -->
+            <header class="bg-white p-5 rounded-lg shadow-sm mb-8 flex items-center gap-4">
+                <!-- Hamburger button -->
+                <button id="openSidebar"
+                        class="lg:hidden text-gray-700 text-xl">
+                        <i class="fa-solid fa-bars"></i>
+                </button>
+                <h2 class="text-2xl font-semibold text-gray-800">
+                    Add New User
+                </h2>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Register a new user to the admin panel.
+                </p>
+
+            </header>
+
+
+            <!-- Form Section -->
+            <section class="bg-white rounded-lg shadow-sm border border-gray-200 max-w-3xl">
+
+                <!-- Form Heading -->
+                <div class="p-6 border-b border-gray-200">
+
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        User Information
+                    </h3>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        Enter the details below to create a user.
+                    </p>
+
+                </div>
+
+
+                <!-- Registration Form -->
+                <form id="addUserForm" class="p-6 space-y-5">
+
+                    <!-- Full Name -->
+                    <div>
+
+                        <label for="userName"
+                            class="block text-sm font-medium text-gray-700 mb-2">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="userName"
+                            placeholder="Enter full name"
+                            required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+
+                    </div>
+
+
+                    <!-- Email -->
+                    <div>
+
+                        <label for="userEmail"
+                            class="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="userEmail"
+                            placeholder="Enter email address"
+                            required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+
+                    </div>
+
+
+                    <!-- Role and Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                        <!-- Role -->
+                        <div>
+
+                            <label for="userRole"
+                                class="block text-sm font-medium text-gray-700 mb-2">
+                                User Role
+                            </label>
+
+                            <select
+                                id="userRole"
+                                required
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+
+                                <option value="">Select Role</option>
+                                <!-- <option value="Admin">Admin</option> -->
+                                <option value="User">User</option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Status -->
+                        <div>
+
+                            <label for="userStatus"
+                                class="block text-sm font-medium text-gray-700 mb-2">
+                                Account Status
+                            </label>
+
+                            <select
+                                id="userStatus"
+                                required
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 pt-5 border-t border-gray-200">
+
+                        <button
+                            type="reset"
+                            class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+
+                            Reset
+
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+
+                            <i class="fa-solid fa-user-plus mr-2"></i>
+                            Add User
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        if (!checkPageAccess("Admin")) {
+            document.body.style.display = "none";
+        }
+    </script>
+
+</body>
+</html>
