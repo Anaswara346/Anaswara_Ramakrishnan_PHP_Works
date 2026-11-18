@@ -1,0 +1,701 @@
+
+<!DOCTYPE html>
+<html lang="en" class="overscroll-none">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ikigai - Admin Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+<body class="bg-slate-50 min-h-screen">
+<!-- bg-gradient-to-r from-indigo-900 via-purple-700 to-blue-600  -->
+    <header class="bg-gradient-to-r from-indigo-700 via-blue-600 to-blue-600 shadow-sm">
+
+        <nav class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+
+            <div class="flex items-center justify-between gap-3">
+
+                <!-- Logo -->
+                <div>
+                    <h1 class="text-2xl font-bold text-white px-5">
+                        IKIGAI
+                    </h1>
+
+                    <p class="text-sm text-white px-5">
+                        Learning Management System
+                    </p>
+                </div>
+
+                <div class="hidden md:flex items-center gap-8">
+                        <!-- class="text-white underline-offset-4 hover:underline transition-all font-semibold"> -->
+                         <!-- after:left-1/2 - Starts positioning at the center
+                                after:-translate-x-1/2 keeps the underline centered -->
+                    <a href="#dashboard"
+                            class="relative text-white font-semibold 
+                                after:content-[''] after:absolute after:left-1/2 
+                                after:-translate-x-1/2 
+                                after:-bottom-1
+                                after:h-[2px] after:w-0 after:bg-white
+                                after:transition-all after:duration-300
+                                hover:after:w-full">
+                        Dashboard
+                    </a>
+
+                    <a href="#users"
+                        class="relative text-white font-semibold 
+                                after:content-[''] after:absolute after:left-1/2 
+                                after:-translate-x-1/2 
+                                after:-bottom-1
+                                after:h-[2px] after:w-0 after:bg-white
+                                after:transition-all after:duration-300
+                                hover:after:w-full">
+                        Users
+                    </a>
+
+                    <a href="#courses"
+                        class="relative text-white font-semibold 
+                                after:content-[''] after:absolute after:left-1/2 
+                                after:-translate-x-1/2 
+                                after:-bottom-1
+                                after:h-[2px] after:w-0 after:bg-white
+                                after:transition-all after:duration-300
+                                hover:after:w-full">
+                        Courses
+                    </a>
+
+                    <a href="#instructors"
+                        class="relative text-white font-semibold 
+                                after:content-[''] after:absolute after:left-1/2 
+                                after:-translate-x-1/2 
+                                after:-bottom-1
+                                after:h-[2px] after:w-0 after:bg-white
+                                after:transition-all after:duration-300
+                                hover:after:w-full">
+                        Instructors
+                    </a>
+
+                </div>
+                
+                <!-- Admin Profile and Logout -->
+                <div class="flex items-center gap-3">
+
+                    <div class="w-13 h-13 rounded-full bg-blue-100 flex items-center justify-center  border  border-blue-800 shadow shadow-blue-700">
+
+                        <span class="text-blue-700 font-bold">
+                            AR
+                        </span>
+
+                    </div>
+
+                    <div class="hidden sm:block">
+
+                        <p class="text-base font-semibold text-dark-900">
+                            Admin
+                        </p>
+
+                        <p class="text-sm text-white">
+                            Administrator
+                        </p>
+
+                    </div>
+
+                    <button
+                        id="logoutBtn"
+                        title="Logout"
+                        class="flex items-center justify-center w-10 h-10 rounded-lg text-red-600 bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-300">
+
+                        <i class="fa-solid fa-right-from-bracket"></i>
+
+                    </button>
+
+                </div>
+                 <!-- Mobile Menu Button -->
+            <button
+                id="mobileMenuBtn"
+                class="md:hidden text-white text-2xl p-2 rounded-lg hover:bg-white/10 transition"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false">
+
+                <i class="fa-solid fa-bars"></i>
+
+            </button>
+
+        </div>
+
+
+        <!-- Mobile Navigation -->
+        <div id="mobileMenu" class="hidden md:hidden mt-4 border-t border-white/20 pt-3">
+
+            <div class="flex flex-col gap-1">
+
+                <a href="#dashboard"
+                    class="text-white font-semibold px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    Dashboard
+                </a>
+
+                <a href="#users"
+                    class="text-white px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    Users
+                </a>
+
+                <a href="#courses"
+                    class="text-white px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    Courses
+                </a>
+
+                <a href="#instructors"
+                    class="text-white px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    Instructors
+                </a>
+
+            </div>
+
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <main id="dashboard"
+        class="mt-6 max-w-8xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+
+
+        <!-- Dashboard Heading -->
+        <section class="mb-8">
+
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">
+                Dashboard Overview
+            </h2>
+
+            <p class="text-gray-500 mt-2">
+                Welcome back! Here's what's happening with Ikigai.
+            </p>
+
+        </section>
+
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
+
+            <!-- Registered Users -->
+            <div class="bg-gradient-to-r from-blue-700 to-blue-500 p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition duration-300">
+
+                <div class="flex items-center justify-between">
+
+                    <div>
+
+                        <p class="text-sm text-gray-900 font-bold text-white">
+                            Registered Users
+                        </p>
+
+                        <h3 id="totalUsers"
+                            class="text-3xl font-bold text-gray-800 mt-3 text-white">
+                            0
+                        </h3>
+
+                    </div>
+
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+
+                        <i class="fa-solid fa-users text-xl text-blue-600"></i>
+
+                    </div>
+
+                </div>
+
+                <p class="text-sm text-gray-900 mt-4 text-white">
+                    Total student registrations
+                </p>
+
+            </div>
+
+
+            <!-- Available Courses -->
+            <div class="bg-gradient-to-r from-emerald-700 to-green-500 p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-green-300 transition duration-300">
+
+                <div class="flex items-center justify-between">
+
+                    <div>
+
+                        <p class="text-sm font-bold text-gray-500 text-white">
+                            Available Courses
+                        </p>
+
+                        <h3 id="totalCourses"
+                            class="text-3xl font-bold text-gray-800 mt-3 text-white">
+                            0
+                        </h3>
+
+                    </div>
+
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+
+                        <i class="fa-solid fa-book-open text-xl text-green-600"></i>
+
+                    </div>
+
+                </div>
+
+                <p class="text-sm text-gray-500 mt-4 text-white">
+                    Currently offered courses
+                </p>
+
+            </div>
+            <!-- Instructors -->
+            <div class="bg-gradient-to-r from-violet-700 to-purple-500 p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-purple-300 transition duration-300">
+
+                <div class="flex items-center justify-between">
+
+                    <div>
+
+                        <p class="text-sm font-bold text-gray-500 text-white">
+                            Instructors
+                        </p>
+
+                        <h3 id="totalInstructors"
+                            class="text-3xl font-bold text-gray-800 mt-3 text-white">
+                            0
+                        </h3>
+
+                    </div>
+
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+
+                        <i class="fa-solid fa-chalkboard-user text-xl text-purple-600"></i>
+
+                    </div>
+
+                </div>
+
+                <p class="text-sm text-gray-500 mt-4 text-white">
+                    Total course instructors
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="bg-white border border-slate-200 rounded-xl shadow-sm border border-gray-200 p-8 py-10 mb-9">
+
+            <div class="mb-6 border-l-4 border-purple-600 pl-4">
+
+                <h3 class="text-lg font-bold text-indigo-950">
+                    Admin Information
+                </h3>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Administrator account details
+                </p>
+
+            </div>
+
+
+            <div class="flex flex-col sm:flex-row items-center gap-5">
+
+                <!-- Avatar -->
+                <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border-1 border-blue-500 shadow shadow-blue-100">
+
+                    <span class="text-2xl font-bold text-blue-700">
+                        AR
+                    </span>
+
+                </div>
+
+                <!-- Profile Details -->
+                <div class="text-center sm:text-left">
+
+                    <h4 class="text-xl font-bold text-gray-800">
+                        Admin
+                    </h4>
+
+                    <p class="text-sm mt-1 text-gray-500">
+                        admin@gmail.com
+                    </p>
+
+                    <div class="mt-2 flex items-center justify-center sm:justify-start gap-2">
+
+                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+
+                        <span class="text-xs font-medium text-emerald-600">
+                            Active
+                        </span>
+
+                    </div>
+
+                    <span class="inline-block mt-3 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-full text-xs font-semibold px-4 py-1.5 border border-indigo-200">
+                        Administrator
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section id="users"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 mb-10">
+
+            <!-- Table Heading -->
+            <div class="p-6 border-b border-gray-200 flex flex-colsm:flex-row justify-between items-start sm:items-center gap-4">
+
+                <!-- <h3 class="text-lg font-bold text-gray-800"> -->
+                <h3 class="text-lg font-bold text-indigo-850">
+                    Registered Users
+                    
+                </h3>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Manage your registered students.
+                </p>
+
+            </div>
+
+            <!-- Responsive Table -->
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-left border-collapse">
+
+                    <thead>
+
+                        <tr class="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                ID
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Name
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Email
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Registration Date
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="userTable">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <section id="courses" class="mb-8 mt-10">
+
+            <div class="mb-8 border-l-4 border-purple-600 pl-4 ">
+
+                <h3 class="text-2xl font-bold text-gray-800">
+                    Courses & Pricing
+                </h3>
+
+                <p class="text-sm text-indigo-800 mt-1">
+                    Explore the available courses and their pricing.
+                </p>
+
+            </div>
+
+
+            <!-- Course Cards -->
+            <div id="courseCards"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+
+            </div>
+
+        </section>
+
+        <section id="instructors"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 mb-10">
+
+            <!-- Table Heading -->
+            <div class="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+
+                <div>
+
+                    <h3 class="text-lg font-bold text-indigo-850">
+                        Instructors
+                    </h3>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        Manage your course instructors.
+                    </p>
+
+                </div>
+
+                <button
+                    id="addInstructorBtn"
+                    class="bg-blue-600 rounded-lg px-5 py-2.5 text-white hover:bg-blue-700 transition duration-300 font-medium">
+
+                    <i class="fa-solid fa-plus mr-2"></i>
+
+                    Add Instructor
+
+                </button>
+
+            </div>
+
+
+            <!-- Responsive Table -->
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-left border-collapse">
+
+                    <thead>
+
+                        <tr class="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                ID
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Name
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Email
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Specialization
+                            </th>
+
+                            <th class="px-4 py-3 text-sm font-semibold text-indigo-800 whitespace-nowrap">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="instructorTable">
+
+                        <!-- Instructors displayed by JavaScript -->
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <div id="userModal"
+        class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50 p-4">
+
+        <div class="bg-white w-full max-w-md rounded-xl shadow-xl p-6">
+
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between mb-6">
+
+                <h2 class="text-xl font-bold text-gray-800">
+                    Edit User
+                </h2>
+
+                <button
+                    type="button"
+                    id="closeUserModal"
+                    class="text-gray-400 hover:text-gray-700 text-2xl">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+            <!-- User Form -->
+            <form id="userForm">
+
+                <input type="hidden" id="userId">
+
+
+                <!-- Name -->
+                <div class="mb-4">
+
+                    <label for="editUserName"
+                        class="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editUserName"
+                        placeholder="Enter user name"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        required>
+
+                </div>
+                <!-- Email -->
+                <div class="mb-6">
+
+                    <label for="editUserEmail"
+                        class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="editUserEmail"
+                        placeholder="Enter email address"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        required>
+
+                </div>
+                <!-- Buttons -->
+                <div class="flex justify-end gap-3">
+
+                    <button
+                        type="button"
+                        id="cancelUserModal"
+                        class="px-5 py-2.5 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-100">
+
+                        Cancel
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+
+                        Update User
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div id="instructorModal"
+        class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50 p-4">
+
+        <div class="bg-white w-full max-w-md rounded-xl shadow-xl p-6">
+
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between mb-6">
+
+                <h2 id="instructorModalTitle"
+                    class="text-xl font-bold text-gray-800">
+
+                    Add Instructor
+
+                </h2>
+
+                <button
+                    type="button"
+                    id="closeInstructorModal"
+                    class="text-gray-400 hover:text-gray-700 text-2xl">
+
+                    &times;
+
+                </button>
+
+            </div>
+            <form id="instructorForm">
+
+                <input type="hidden" id="instructorId">
+                <!-- Name -->
+                <div class="mb-4">
+
+                    <label for="instructorName"
+                        class="block text-sm font-medium text-gray-700 mb-2">
+                        Instructor Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="instructorName"
+                        placeholder="Enter instructor name"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        required>
+
+                </div>
+                <!-- Email -->
+                <div class="mb-4">
+
+                    <label for="instructorEmail"
+                        class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="instructorEmail"
+                        placeholder="Enter email address"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        required>
+
+                </div>
+                <div class="mb-6">
+
+                    <label for="instructorSpecialization"
+                        class="block text-sm font-medium text-gray-700 mb-2">
+                        Specialization
+                    </label>
+
+                    <input
+                        type="text"
+                        id="instructorSpecialization"
+                        placeholder="Enter specialization"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        required>
+                </div>
+                <div class="flex justify-end gap-3">
+
+                    <button
+                        type="button"
+                        id="cancelInstructorModal"
+                        class="px-5 py-2.5 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-100">
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                        Save Instructor
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
