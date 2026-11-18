@@ -64,3 +64,28 @@ button:hover {
     background-color: lightblue;
 
 }
+
+@media (max-width: 480px) {
+    .counter-container{
+        width: calc(100% - 32px);
+        padding: 32px 20px;
+        min-height: auto;
+    }
+    .counter-container h1 {
+        font-size: 30px;
+    }
+    #count {
+        font-size: 36px;
+        margin: 16px 0;
+    }
+     .button {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    button {
+        margin: 0;
+    }
+}
